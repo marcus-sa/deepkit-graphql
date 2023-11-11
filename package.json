@@ -31,7 +31,7 @@
     "esbuild": "^0.17.16",
     "eslint": "~8.46.0",
     "eslint-config-prettier": "8.1.0",
-    "isbot": "^3.6.13",
+    "isbot": "^3.7.0",
     "jest": "^29.4.1",
     "jest-environment-node": "^29.4.1",
     "lefthook": "^1.4.9",

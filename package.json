@@ -67,7 +67,7 @@
     "@deepkit/sql": "^1.0.1-alpha.98",
     "@deepkit/stopwatch": "^1.0.1-alpha.97",
     "@deepkit/template": "^1.0.1-alpha.97",
-    "@deepkit/type": "1.0.1-alpha.97",
+    "@deepkit/type": "1.0.1-alpha.105",
     "@deepkit/type-compiler": "1.0.1-alpha.97",
     "@deepkit/workflow": "^1.0.1-alpha.97",
     "graphql": "^16.8.0",

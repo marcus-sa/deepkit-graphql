@@ -69,7 +69,7 @@
     "@deepkit/template": "^1.0.1-alpha.97",
     "@deepkit/type": "1.0.1-alpha.97",
     "@deepkit/type-compiler": "1.0.1-alpha.97",
-    "@deepkit/workflow": "^1.0.1-alpha.97",
+    "@deepkit/workflow": "^1.0.1-alpha.105",
     "graphql": "^16.8.0",
     "graphql-request": "^6.1.0",
     "graphql-scalars": "^1.22.2",

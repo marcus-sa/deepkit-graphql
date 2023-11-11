@@ -100,8 +100,8 @@ devDependencies:
     specifier: ^0.2.12
     version: 0.2.12(@deepkit/type-compiler@1.0.1-alpha.97)(@nx/webpack@16.7.4)
   '@deepkit/postgres':
-    specifier: 1.0.1-alpha.98
-    version: 1.0.1-alpha.98(@deepkit/core@1.0.1-alpha.97)(@deepkit/orm@1.0.1-alpha.98)(@deepkit/sql@1.0.1-alpha.98)(@deepkit/stopwatch@1.0.1-alpha.97)(@deepkit/type@1.0.1-alpha.97)
+    specifier: 1.0.1-alpha.105
+    version: 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.97)(@deepkit/orm@1.0.1-alpha.98)(@deepkit/sql@1.0.1-alpha.98)(@deepkit/stopwatch@1.0.1-alpha.97)(@deepkit/type@1.0.1-alpha.97)
   '@nx/devkit':
     specifier: ^16.8.0
     version: 16.8.0(nx@16.7.4)
@@ -2195,8 +2195,8 @@ packages:
       '@deepkit/type': 1.0.1-alpha.97(@deepkit/core@1.0.1-alpha.97)
       sift: 7.0.1
 
-  /@deepkit/postgres@1.0.1-alpha.98(@deepkit/core@1.0.1-alpha.97)(@deepkit/orm@1.0.1-alpha.98)(@deepkit/sql@1.0.1-alpha.98)(@deepkit/stopwatch@1.0.1-alpha.97)(@deepkit/type@1.0.1-alpha.97):
-    resolution: {integrity: sha512-pEbpTdRWwxqnG/PZMrnS8mzwvrkIg82ThUPK4m5eAK943kcc9glKIF1sq167bTi7ys892ULAWRVXYyIDdtQWyw==}
+  /@deepkit/postgres@1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.97)(@deepkit/orm@1.0.1-alpha.98)(@deepkit/sql@1.0.1-alpha.98)(@deepkit/stopwatch@1.0.1-alpha.97)(@deepkit/type@1.0.1-alpha.97):
+    resolution: {integrity: sha512-NqMKQRwt4z0b6YPl3j0D+n1LWO6QNfzh54KWNNzyif9boBKEtQrzz4xAdJ77DJ95fqtetlHDBdQ44ajIUA4izw==}
     peerDependencies:
       '@deepkit/core': ^1.0.1-alpha.13
       '@deepkit/orm': ^1.0.1-alpha.13
@@ -2210,9 +2210,10 @@ packages:
       '@deepkit/stopwatch': 1.0.1-alpha.97(@deepkit/core@1.0.1-alpha.97)(@deepkit/type@1.0.1-alpha.97)
       '@deepkit/type': 1.0.1-alpha.97(@deepkit/core@1.0.1-alpha.97)
       '@types/pg': 7.14.11
-      pg: 8.11.3(pg-native@3.0.1)
-      pg-native: 3.0.1
+      pg: 8.11.3
       sqlstring: 2.3.3
+    transitivePeerDependencies:
+      - pg-native
     dev: true
 
   /@deepkit/rpc-tcp@1.0.1-alpha.97(@deepkit/core@1.0.1-alpha.97)(@deepkit/rpc@1.0.1-alpha.97):
@@ -5556,12 +5557,6 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /bindings@1.5.0:
-    resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
-    dependencies:
-      file-uri-to-path: 1.0.0
-    dev: true
-
   /bl@4.1.0:
     resolution: {integrity: sha512-1W07cM9gS6DcLperZfFSj+bWLtaPGSOHWhPiGzXmvVJbRLdG82sH/Kn8EtW1VqWVA54AKf2h5k5BbnIbwF3h6w==}
     dependencies:
@@ -7865,10 +7860,6 @@ packages:
       flat-cache: 3.1.0
     dev: true
 
-  /file-uri-to-path@1.0.0:
-    resolution: {integrity: sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==}
-    dev: true
-
   /filelist@1.0.4:
     resolution: {integrity: sha512-w1cEuf3S+DrLCQL7ET6kz+gmlJdbq9J7yXCSjK/OZCPA+qEN1WyF4ZAf0YYJa4/shHJra2t/d/r8SV4Ji+x+8Q==}
     dependencies:
@@ -9333,10 +9324,6 @@ packages:
     engines: {node: '>=12'}
     dev: true
 
-  /isarray@0.0.1:
-    resolution: {integrity: sha512-D2S+3GLxWH+uhrNEcoh/fnmYeP8E8/zHl644d/jdA0g2uyXvy3sb0qxotE+ne0LtccHknQzWwZEzhak7oJ0COQ==}
-    dev: true
-
   /isarray@1.0.0:
     resolution: {integrity: sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==}
     dev: true
@@ -10255,14 +10242,6 @@ packages:
       type-check: 0.4.0
     dev: true
 
-  /libpq@1.8.12:
-    resolution: {integrity: sha512-4lUY9BD9suz76mVS0kH4rRgRy620g/c9YZH5GYC3smfIpjtj6KiPuQ4IwQSHSZMMMhMM3tBFrYUrw8mHOOZVeg==}
-    requiresBuild: true
-    dependencies:
-      bindings: 1.5.0
-      nan: 2.17.0
-    dev: true
-
   /license-webpack-plugin@4.0.2(webpack@5.88.2):
     resolution: {integrity: sha512-771TFWFD70G1wLTC4oU2Cw4qvtmNrIw+wRvBtn+okgHl7slJVi7zfNcdmqDL72BojM30VNJ2UHylr1o77U37Jw==}
     peerDependencies:
@@ -10914,10 +10893,6 @@ packages:
       mkdirp: 0.5.6
       ncp: 2.0.0
       rimraf: 2.4.5
-    dev: true
-
-  /nan@2.17.0:
-    resolution: {integrity: sha512-2ZTgtl0nJsO0KQCjEpxcIr5D+Yv90plTitZt9JBfQvVJDS5seMl3FOvsh3+9CoYWXf/1l5OaZzzF6nDm4cagaQ==}
     dev: true
 
   /nanoid@3.3.6:
@@ -11665,34 +11640,16 @@ packages:
     engines: {node: '>=4.0.0'}
     dev: true
 
-  /pg-native@3.0.1:
-    resolution: {integrity: sha512-LBVNWkNh0fVx/cienARRP2y22J5OpUsKBe0TpxzAx3arEUUdIs77aLSAHS3scS7SMaqc+OkG40CEu5fN0/cjIw==}
-    dependencies:
-      libpq: 1.8.12
-      pg-types: 1.13.0
-      readable-stream: 1.0.31
-    dev: true
-
   /pg-pool@3.6.1(pg@8.11.3):
     resolution: {integrity: sha512-jizsIzhkIitxCGfPRzJn1ZdcosIt3pz9Sh3V01fm1vZnbnCMgmGl5wvGGdNN2EL9Rmb0EcFoCkixH4Pu+sP9Og==}
     peerDependencies:
       pg: '>=8.0'
     dependencies:
-      pg: 8.11.3(pg-native@3.0.1)
+      pg: 8.11.3
     dev: true
 
   /pg-protocol@1.6.0:
     resolution: {integrity: sha512-M+PDm637OY5WM307051+bsDia5Xej6d9IR4GwJse1qA1DIhiKlksvrneZOYQq42OM+spubpcNYEo2FcKQrDk+Q==}
-    dev: true
-
-  /pg-types@1.13.0:
-    resolution: {integrity: sha512-lfKli0Gkl/+za/+b6lzENajczwZHc7D5kiUCZfgm914jipD2kIOIvEkAhZ8GrW3/TUoP9w8FHjwpPObBye5KQQ==}
-    dependencies:
-      pg-int8: 1.0.1
-      postgres-array: 1.0.3
-      postgres-bytea: 1.0.0
-      postgres-date: 1.0.7
-      postgres-interval: 1.2.0
     dev: true
 
   /pg-types@2.2.0:
@@ -11706,7 +11663,7 @@ packages:
       postgres-interval: 1.2.0
     dev: true
 
-  /pg@8.11.3(pg-native@3.0.1):
+  /pg@8.11.3:
     resolution: {integrity: sha512-+9iuvG8QfaaUrrph+kpF24cXkH1YOOUeArRNYIxq1viYHZagBxrTno7cecY1Fa44tJeZvaoG+Djpkc3JwehN5g==}
     engines: {node: '>= 8.0.0'}
     peerDependencies:
@@ -11718,7 +11675,6 @@ packages:
       buffer-writer: 2.0.0
       packet-reader: 1.0.0
       pg-connection-string: 2.6.2
-      pg-native: 3.0.1
       pg-pool: 3.6.1(pg@8.11.3)
       pg-protocol: 1.6.0
       pg-types: 2.2.0
@@ -12492,11 +12448,6 @@ packages:
       source-map-js: 1.0.2
     dev: true
 
-  /postgres-array@1.0.3:
-    resolution: {integrity: sha512-5wClXrAP0+78mcsNX3/ithQ5exKvCyK5lr5NEEEeGwwM6NJdQgzIJBVxLvRW+huFpX92F2QnZ5CcokH0VhK2qQ==}
-    engines: {node: '>=0.10.0'}
-    dev: true
-
   /postgres-array@2.0.0:
     resolution: {integrity: sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA==}
     engines: {node: '>=4'}
@@ -12800,15 +12751,6 @@ packages:
       normalize-package-data: 6.0.0
       parse-json: 7.1.0
       type-fest: 4.3.1
-    dev: true
-
-  /readable-stream@1.0.31:
-    resolution: {integrity: sha512-tco/Dwv1f/sgIgN6CWdj/restacPKNskK6yps1981ivH2ZmLYcs5o5rVzL3qaO/cSkhN8hYOMWs7+glzOLSgRg==}
-    dependencies:
-      core-util-is: 1.0.2
-      inherits: 2.0.4
-      isarray: 0.0.1
-      string_decoder: 0.10.31
     dev: true
 
   /readable-stream@2.3.8:
@@ -13857,10 +13799,6 @@ packages:
       call-bind: 1.0.2
       define-properties: 1.2.0
       es-abstract: 1.22.1
-    dev: true
-
-  /string_decoder@0.10.31:
-    resolution: {integrity: sha512-ev2QzSzWPYmy9GuqfIVildA4OdcGLeFZQrq5ys6RtiuF+RQQiZWr8TZNyAcuVXyQRYfEO+MsoB/1BuQVhOJuoQ==}
     dev: true
 
   /string_decoder@1.1.1:

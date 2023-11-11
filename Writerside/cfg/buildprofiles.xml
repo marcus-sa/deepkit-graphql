@@ -7,9 +7,4 @@
     <web-root>https://deepkit-graphql.js.org</web-root>
   </variables>
   <build-profile instance="instance_id"/>
-  <build-profile instance="deepkit-graphql">
-    <variables>
-      <noindex-content>false</noindex-content>
-    </variables>
-  </build-profile>
 </buildprofiles>

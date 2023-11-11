@@ -5,7 +5,7 @@
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
       "parserOptions": {
-        "project": ["packages/graphql/tsconfig.*?.json"]
+        "project": ["packages/core/tsconfig.*?.json"]
       },
       "rules": {}
     },

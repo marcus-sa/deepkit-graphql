@@ -5,7 +5,7 @@
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
       "parserOptions": {
-        "project": ["packages/apollo-graphql/tsconfig.*?.json"]
+        "project": ["packages/apollo/tsconfig.*?.json"]
       },
       "rules": {}
     },

@@ -26,23 +26,23 @@
           }
         ]
       },
-      "infile": "packages/graphql/CHANGELOG.md",
+      "infile": "packages/core/CHANGELOG.md",
       "parserOpts": {
         "headerPattern": "^(\\w*)(?:\\((graphql*)\\))?\\: (.*)$"
       }
     },
     "@release-it/bumper": {
       "in": {
-        "file": "packages/graphql/package.json",
+        "file": "packages/core/package.json",
         "path": "version"
       },
       "out": [
         {
-          "file": "packages/graphql/package.json",
+          "file": "packages/core/package.json",
           "path": "version"
         },
         {
-          "file": "dist/packages/graphql/package.json",
+          "file": "dist/packages/core/package.json",
           "path": "version"
         }
       ]
@@ -54,7 +54,7 @@
     "requireCleanWorkingDir": false
   },
   "npm": {
-    "publishPath": "dist/packages/graphql",
+    "publishPath": "dist/packages/core",
     "publish": false
   },
   "github": {
@@ -63,7 +63,7 @@
   },
   "hooks": {
     "after:bump": "git checkout -- package.json",
-    "before:github:release": "npm publish dist/packages/graphql"
+    "before:github:release": "npm publish dist/packages/core"
   },
   "ci": true
 }

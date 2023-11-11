@@ -26,23 +26,23 @@
           }
         ]
       },
-      "infile": "packages/apollo-graphql/CHANGELOG.md",
+      "infile": "packages/apollo/CHANGELOG.md",
       "parserOpts": {
         "headerPattern": "^(\\w*)(?:\\((apollo-graphql*)\\))?\\: (.*)$"
       }
     },
     "@release-it/bumper": {
       "in": {
-        "file": "packages/apollo-graphql/package.json",
+        "file": "packages/apollo/package.json",
         "path": "version"
       },
       "out": [
         {
-          "file": "packages/apollo-graphql/package.json",
+          "file": "packages/apollo/package.json",
           "path": "version"
         },
         {
-          "file": "dist/packages/apollo-graphql/package.json",
+          "file": "dist/packages/apollo/package.json",
           "path": "version"
         }
       ]
@@ -54,7 +54,7 @@
     "requireCleanWorkingDir": false
   },
   "npm": {
-    "publishPath": "dist/packages/apollo-graphql",
+    "publishPath": "dist/packages/apollo",
     "publish": false
   },
   "github": {
@@ -63,7 +63,7 @@
   },
   "hooks": {
     "after:bump": "git checkout -- package.json",
-    "before:github:release": "npm publish dist/packages/apollo-graphql"
+    "before:github:release": "npm publish dist/packages/apollo"
   },
   "ci": true
 }

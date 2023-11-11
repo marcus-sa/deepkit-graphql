@@ -184,8 +184,8 @@ devDependencies:
     specifier: ^4.6.1
     version: 4.6.1
   npm-local-development:
-    specifier: ^0.4.0
-    version: 0.4.0
+    specifier: ^0.4.2
+    version: 0.4.2
   nx:
     specifier: 16.7.4
     version: 16.7.4
@@ -11137,8 +11137,8 @@ packages:
     engines: {node: '>=14.16'}
     dev: true
 
-  /npm-local-development@0.4.0:
-    resolution: {integrity: sha512-rIsdEHRtsUYbN+WZnlnJI/3D17kozLKI5maER4FSS7ZJoEnqfheCpDwj1pLOchUr52YaAwhpzLulivVUWwSaYQ==}
+  /npm-local-development@0.4.2:
+    resolution: {integrity: sha512-tvPRVuvrxsNR8YmgmQQpMn87vtHzpZ6m7OSFf7/7/XOlAZyn9cEOWABLFT6oxZgK3LyQo8bguMHCRYdRuLNKbQ==}
     hasBin: true
     dependencies:
       chalk: 4.1.2

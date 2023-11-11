@@ -6,11 +6,9 @@ import { ClassType } from '@deepkit/core';
 import { gqlResolverDecorator } from './decorators';
 import { DeepkitGraphQLResolvers } from './resolvers';
 import { GraphQLServer } from './graphql-server';
-import { GraphQLConfig } from './graphql-config';
 import { Driver } from './driver';
 
 export class GraphQLModule extends createModule({
-  config: GraphQLConfig,
   listeners: [GraphQLServer],
   forRoot: true,
 }) {

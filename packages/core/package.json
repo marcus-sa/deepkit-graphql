@@ -13,7 +13,10 @@
     "tslib": "2.6.2"
   },
   "peerDependencies": {
-    "graphql": "16.8.0"
+    "graphql": "16.8.0",
+    "@deepkit/core": "^1.0.1-alpha.97",
+    "@deepkit/type": "^1.0.1-alpha.97",
+    "@deepkit/injector": "^1.0.1-alpha.97"
   },
   "publishConfig": {
     "access": "public"

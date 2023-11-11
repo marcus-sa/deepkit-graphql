@@ -1,6 +1,7 @@
 import { InjectorModule } from '@deepkit/injector';
 import { ClassType } from '@deepkit/core';
 import { GraphQLError, GraphQLFieldResolver } from 'graphql';
+import { deserializeFunction } from '@deepkit/type';
 import {
   deserialize,
   metaAnnotation,
@@ -17,7 +18,6 @@ import {
 } from '@deepkit/type';
 
 import { CONTEXT_META_NAME, Instance, PARENT_META_NAME } from './types-builder';
-import { deserializeFunction } from '@deepkit/type';
 
 export class DeepkitGraphQLResolvers extends Set<{
   readonly module: InjectorModule;

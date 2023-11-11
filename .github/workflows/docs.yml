@@ -11,7 +11,7 @@ permissions:
 
 env:
   INSTANCE: Writerside/${{ github.event.repository.name }}
-  ARTIFACT: webHelp${{ github.event.repository.name }}2-all.zip
+  ARTIFACT: webHelpDEEPKIT-GRAPHQL2-all.zip
   DOCKER_VERSION: 232.10165.1
   ALGOLIA_ARTIFACT: algolia-indexes-${{ github.event.repository.name }}.zip
   ALGOLIA_APP_NAME: Deepkit GraphQL

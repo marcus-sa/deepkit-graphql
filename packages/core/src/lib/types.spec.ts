@@ -538,6 +538,8 @@ describe('getTypeName', () => {
     expect(getTypeName(typeOf<Dog | Cat>())).toMatchInlineSnapshot(`"DogCat"`);
   });
 
+  test.todo('intersection');
+
   test('Pick', async () => {
     interface Test {
       readonly id: integer;
@@ -555,7 +557,7 @@ describe('getTypeName', () => {
     }
 
     expect(
-      stringifyType(typeOf<Test2<'deepkit'>>()).replace(/\W/g, ''),
+      getTypeName(typeOf<Test2<'deepkit'>>()),
     ).toMatchInlineSnapshot(`"Test2deepkit"`);
   });
 });

@@ -175,8 +175,8 @@ devDependencies:
     specifier: ^1.4.9
     version: 1.4.9
   neonctl:
-    specifier: ^1.21.3
-    version: 1.21.3
+    specifier: ^1.23.2
+    version: 1.23.2
   node-gyp:
     specifier: ^9.4.0
     version: 9.4.0
@@ -10961,8 +10961,8 @@ packages:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
     dev: true
 
-  /neonctl@1.21.3:
-    resolution: {integrity: sha512-PltYb5JMBXIudO6skrNEQpzjOkCRJp/Lbj9/KE+7SwuD8Ra+dtFZqbY3F9X+M1iaSnGM8++Q5KqXGDnqlp1g8w==}
+  /neonctl@1.23.2:
+    resolution: {integrity: sha512-CPfZigK60VOjYKwDRJKpImJGN6iq7CykK9T1diVzJO1T2FEcYL3kjdovlE9wzZFeZMu3o9P0bH5nYcGQ5XNVYA==}
     engines: {node: '>=18'}
     hasBin: true
     dependencies:

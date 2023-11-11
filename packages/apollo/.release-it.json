@@ -33,13 +33,13 @@
     },
     "@release-it/bumper": {
       "in": {
-        "file": "packages/apollo/package.json",
-        "path": "version"
+        "file": "packages/apollo/package.version",
+        "path": "text/plain"
       },
       "out": [
         {
-          "file": "packages/apollo/package.json",
-          "path": "version"
+          "file": "packages/apollo/package.version",
+          "path": "text/plain"
         },
         {
           "file": "dist/packages/apollo/package.json",
@@ -62,7 +62,7 @@
     "releaseName": "apollo ${version}"
   },
   "hooks": {
-    "after:bump": "git checkout -- package.json",
+    "after:bump": "git checkout -- package.version",
     "before:github:release": "npm publish dist/packages/apollo"
   },
   "ci": true

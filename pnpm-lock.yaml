@@ -94,8 +94,8 @@ devDependencies:
     specifier: ^17.7.0
     version: 17.7.0
   '@commitlint/config-nx-scopes':
-    specifier: ^17.6.4
-    version: 17.6.4(nx@16.7.4)
+    specifier: ^18.4.0
+    version: 18.4.0(nx@16.7.4)
   '@deepkit-modules/nx-webpack-plugin':
     specifier: ^0.2.12
     version: 0.2.12(@deepkit/type-compiler@1.0.1-alpha.97)(@nx/webpack@16.7.4)
@@ -1702,11 +1702,11 @@ packages:
       conventional-changelog-conventionalcommits: 6.1.0
     dev: true
 
-  /@commitlint/config-nx-scopes@17.6.4(nx@16.7.4):
-    resolution: {integrity: sha512-pUH4doxB/rPWGV4e9kwFkVEGlcnZsjSXUyk+DSguFBypTAWV/2yZipB2N02vGLhWFnfZEMKTR5rReGodaJIkrg==}
-    engines: {node: '>=v14'}
+  /@commitlint/config-nx-scopes@18.4.0(nx@16.7.4):
+    resolution: {integrity: sha512-Ek8uS4gr0s8uZcKxFWFKD+5c8xCbFnxEOoxOEbtxzrNglVHWL51XJq4VbYApWXfHgwVt02bbGmB1owPFYWNZ9Q==}
+    engines: {node: '>=v18'}
     peerDependencies:
-      nx: ^14.0.0 || ^15.0.0 || ^16.0.0
+      nx: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
     peerDependenciesMeta:
       nx:
         optional: true

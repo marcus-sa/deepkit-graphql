@@ -8,7 +8,7 @@
   "private": true,
   "devDependencies": {
     "@commitlint/config-conventional": "^17.7.0",
-    "@commitlint/config-nx-scopes": "^17.6.4",
+    "@commitlint/config-nx-scopes": "^18.4.0",
     "@deepkit-modules/nx-webpack-plugin": "^0.2.12",
     "@deepkit/postgres": "1.0.1-alpha.98",
     "@nx/devkit": "^16.8.0",

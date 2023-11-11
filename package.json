@@ -36,7 +36,7 @@
     "jest-environment-node": "^29.4.1",
     "lefthook": "^1.4.9",
     "neonctl": "^1.21.3",
-    "node-gyp": "^9.4.0",
+    "node-gyp": "^10.0.1",
     "node-gyp-build": "^4.6.1",
     "npm-local-development": "^0.4.0",
     "nx": "16.7.4",

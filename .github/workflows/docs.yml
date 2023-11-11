@@ -13,7 +13,7 @@ env:
   INSTANCE: Writerside/${{ github.event.repository.name }}
   ARTIFACT: webHelpDEEPKIT-GRAPHQL2-all.zip
   DOCKER_VERSION: 232.10165.1
-  ALGOLIA_ARTIFACT: algolia-indexes-${{ github.event.repository.name }}.zip
+  ALGOLIA_ARTIFACT: algolia-indexes.zip
   ALGOLIA_APP_NAME: Deepkit GraphQL
   ALGOLIA_INDEX_NAME: docs
   ALGOLIA_KEY: ${{ secrets.ALGOLIA_ADMIN_KEY }}

@@ -1,0 +1,26 @@
+{
+  "name": "@deepkit-graphql/apollo",
+  "version": "0.0.1",
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "typings": "./src/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marcus-sa/deepkit-community.git"
+  },
+  "dependencies": {
+    "tslib": "2.6.2",
+    "@apollo/server": "4.9.3"
+  },
+  "peerDependencies": {
+    "@deepkit-graphql/core": "*",
+    "@deepkit/app": "*",
+    "@deepkit/http": "*",
+    "@deepkit/framework": "*",
+    "graphql": "^16.8.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "reflection": true
+}

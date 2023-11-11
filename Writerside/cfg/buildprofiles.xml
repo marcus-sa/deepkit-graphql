@@ -1,0 +1,10 @@
+<buildprofiles xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/build-profiles.xsd"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <variables>
+    <algolia-id>2OTJTZ278E</algolia-id>
+    <algolia-index>docs</algolia-index>
+    <algolia-api-key>6f336bc6c21a8c32e77939af8e5ce482</algolia-api-key>
+    <web-root>https://deepkit-graphql.js.org</web-root>
+  </variables>
+  <build-profile instance="instance_id"/>
+</buildprofiles>

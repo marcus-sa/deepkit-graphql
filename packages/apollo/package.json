@@ -6,7 +6,7 @@
   "typings": "./src/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/marcus-sa/deepkit-community.git"
+    "url": "https://github.com/marcus-sa/deepkit-graphql.git"
   },
   "dependencies": {
     "tslib": "2.6.2",

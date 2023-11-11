@@ -40,6 +40,7 @@
     "node-gyp-build": "^4.6.1",
     "npm-local-development": "^0.4.0",
     "nx": "16.7.4",
+    "nx-cloud": "^16.5.2",
     "prettier": "^2.6.2",
     "release-it": "^16.1.5",
     "ts-jest": "^29.1.0",

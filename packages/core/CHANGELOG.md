@@ -1,5 +1,7 @@
 
 
+## [0.0.6](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.0.5...core-v0.0.6) (2023-11-11)
+
 ## [0.0.5](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.0.4...core-v0.0.5) (2023-11-11)
 
 

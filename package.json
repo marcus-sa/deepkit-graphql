@@ -70,7 +70,7 @@
     "@deepkit/type": "1.0.1-alpha.97",
     "@deepkit/type-compiler": "1.0.1-alpha.97",
     "@deepkit/workflow": "^1.0.1-alpha.97",
-    "graphql": "^16.8.0",
+    "graphql": "^16.8.1",
     "graphql-request": "^6.1.0",
     "graphql-scalars": "^1.22.2",
     "radash": "^11.0.0",

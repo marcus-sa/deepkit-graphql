@@ -63,7 +63,7 @@
   },
   "hooks": {
     "after:bump": "git checkout -- package.json",
-    "before:github:release": "npm publish dist/packages/apollo"
+    "before:github:release": "npm publish dist/packages/apollo --allow-same-version"
   },
   "ci": true
 }

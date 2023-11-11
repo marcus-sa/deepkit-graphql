@@ -63,7 +63,7 @@
   },
   "hooks": {
     "after:bump": "git checkout -- package.json",
-    "before:github:release": "npm publish dist/packages/core"
+    "before:github:release": "npm publish dist/packages/core --allow-same-version"
   },
   "ci": true
 }

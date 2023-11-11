@@ -49,7 +49,7 @@
     "verdaccio": "^5.0.4"
   },
   "dependencies": {
-    "@apollo/server": "4.9.3",
+    "@apollo/server": "4.9.5",
     "@deepkit/app": "1.0.1-alpha.98",
     "@deepkit/broker": "^1.0.1-alpha.97",
     "@deepkit/bson": "^1.0.1-alpha.97",

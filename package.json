@@ -59,7 +59,7 @@
     "@deepkit/event": "^1.0.1-alpha.97",
     "@deepkit/framework": "^1.0.1-alpha.99",
     "@deepkit/http": "^1.0.1-alpha.98",
-    "@deepkit/injector": "^1.0.1-alpha.97",
+    "@deepkit/injector": "^1.0.1-alpha.105",
     "@deepkit/logger": "^1.0.1-alpha.97",
     "@deepkit/orm": "1.0.1-alpha.98",
     "@deepkit/rpc": "1.0.1-alpha.97",

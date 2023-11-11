@@ -103,8 +103,8 @@ devDependencies:
     specifier: 1.0.1-alpha.98
     version: 1.0.1-alpha.98(@deepkit/core@1.0.1-alpha.97)(@deepkit/orm@1.0.1-alpha.98)(@deepkit/sql@1.0.1-alpha.98)(@deepkit/stopwatch@1.0.1-alpha.97)(@deepkit/type@1.0.1-alpha.97)
   '@nx/devkit':
-    specifier: ^16.8.0
-    version: 16.8.0(nx@16.7.4)
+    specifier: ^17.1.1
+    version: 17.1.1(nx@16.7.4)
   '@nx/esbuild':
     specifier: 16.7.4
     version: 16.7.4(@types/node@18.7.1)(esbuild@0.17.17)(nx@16.7.4)(typescript@5.2.2)(verdaccio@5.0.4)
@@ -3018,10 +3018,10 @@ packages:
       - nx
     dev: true
 
-  /@nrwl/devkit@16.8.0(nx@16.7.4):
-    resolution: {integrity: sha512-zpSNUCj9RZAAcCIHcjeVQT8FPutnaCe0empvm0yxWPbmIXjN/4Lw1f4V5K42MNDSa4Z8Hvj1tTL3+8JXSV9JxA==}
+  /@nrwl/devkit@17.1.1(nx@16.7.4):
+    resolution: {integrity: sha512-zLq/Sje4XqcZdrL7SYqylFD3Wo9KoiZtj+4CFSphME67TshN8qqEYVa6ePHFdM/CHIEuKHeWK4CHbebyPGvtyg==}
     dependencies:
-      '@nx/devkit': 16.8.0(nx@16.7.4)
+      '@nx/devkit': 17.1.1(nx@16.7.4)
     transitivePeerDependencies:
       - nx
     dev: true
@@ -3229,12 +3229,12 @@ packages:
       tslib: 2.6.2
     dev: true
 
-  /@nx/devkit@16.8.0(nx@16.7.4):
-    resolution: {integrity: sha512-vFeWR6dQSmiVWOccIj9vpnB0nRzOY+VWucDDbQ4TKWQKzKfpnFDMsGxImff1AHFI0h4pvJOimDrY5+hktRrYew==}
+  /@nx/devkit@17.1.1(nx@16.7.4):
+    resolution: {integrity: sha512-fOIaVRu51eG4AvnysWW0vTH9ZhjXlt/xm1uinfjfa8n+F2yVmCfT8erZaW4XsiodfJcCfs3ICwkcVCtF9aCeAQ==}
     peerDependencies:
-      nx: '>= 15 <= 17'
+      nx: '>= 16 <= 18'
     dependencies:
-      '@nrwl/devkit': 16.8.0(nx@16.7.4)
+      '@nrwl/devkit': 17.1.1(nx@16.7.4)
       ejs: 3.1.9
       enquirer: 2.3.6
       ignore: 5.2.4

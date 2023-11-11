@@ -11,7 +11,7 @@
     "@commitlint/config-nx-scopes": "^17.6.4",
     "@deepkit-modules/nx-webpack-plugin": "^0.2.12",
     "@deepkit/postgres": "1.0.1-alpha.98",
-    "@nx/devkit": "^16.8.0",
+    "@nx/devkit": "^17.1.1",
     "@nx/esbuild": "16.7.4",
     "@nx/eslint-plugin": "16.7.4",
     "@nx/jest": "16.7.4",

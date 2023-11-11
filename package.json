@@ -52,7 +52,7 @@
     "@apollo/server": "4.9.3",
     "@deepkit/app": "1.0.1-alpha.98",
     "@deepkit/broker": "^1.0.1-alpha.97",
-    "@deepkit/bson": "^1.0.1-alpha.97",
+    "@deepkit/bson": "^1.0.1-alpha.105",
     "@deepkit/core": "1.0.1-alpha.97",
     "@deepkit/core-rxjs": "^1.0.1-alpha.97",
     "@deepkit/crypto": "^1.0.1-alpha.89",

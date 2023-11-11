@@ -12,14 +12,4 @@ Start typing here...
 <tab title="Post">
 </tab>
 </tabs>
-
-<code-block lang="typescript"> 
-import { UUID } from '@deepkit/type';
-
-interface Author {
-  id: UUID;
-  firstName: string;
-  lastName: string;
-}
-</code-block>
 </chapter>

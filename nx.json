@@ -65,6 +65,7 @@
   "namedInputs": {
     "default": [
       "{projectRoot}/**/*",
+      "!{projectRoot}/CHANGELOG.md",
       "sharedGlobals"
     ],
     "production": [

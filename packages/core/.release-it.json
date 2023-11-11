@@ -62,7 +62,7 @@
     "releaseName": "core ${version}"
   },
   "hooks": {
-    "after:bump": "git checkout -- package.version",
+    "after:bump": "git checkout -- package.json",
     "before:github:release": "npm publish dist/packages/core"
   },
   "ci": true

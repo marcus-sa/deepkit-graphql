@@ -28,7 +28,7 @@
       },
       "infile": "packages/core/CHANGELOG.md",
       "parserOpts": {
-        "headerPattern": "^(\\w*)(?:\\((graphql*)\\))?\\: (.*)$"
+        "headerPattern": "^(\\w*)(?:\\((core*)\\))?\\: (.*)$"
       }
     },
     "@release-it/bumper": {
@@ -49,8 +49,8 @@
     }
   },
   "git": {
-    "commitMessage": "chore(graphql): release ${version}",
-    "tagName": "graphql-v${version}",
+    "commitMessage": "chore(core): release ${version}",
+    "tagName": "core-v${version}",
     "requireCleanWorkingDir": false
   },
   "npm": {
@@ -59,7 +59,7 @@
   },
   "github": {
     "release": true,
-    "releaseName": "graphql ${version}"
+    "releaseName": "core ${version}"
   },
   "hooks": {
     "after:bump": "git checkout -- package.json",

@@ -28,7 +28,7 @@
       },
       "infile": "packages/apollo/CHANGELOG.md",
       "parserOpts": {
-        "headerPattern": "^(\\w*)(?:\\((apollo-graphql*)\\))?\\: (.*)$"
+        "headerPattern": "^(\\w*)(?:\\((apollo*)\\))?\\: (.*)$"
       }
     },
     "@release-it/bumper": {
@@ -49,8 +49,8 @@
     }
   },
   "git": {
-    "commitMessage": "chore(apollo-graphql): release ${version}",
-    "tagName": "apollo-graphql-v${version}",
+    "commitMessage": "chore(apollo): release ${version}",
+    "tagName": "apollo-v${version}",
     "requireCleanWorkingDir": false
   },
   "npm": {
@@ -59,7 +59,7 @@
   },
   "github": {
     "release": true,
-    "releaseName": "apollo-graphql ${version}"
+    "releaseName": "apollo ${version}"
   },
   "hooks": {
     "after:bump": "git checkout -- package.json",

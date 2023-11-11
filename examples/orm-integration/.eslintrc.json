@@ -5,7 +5,7 @@
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
       "parserOptions": {
-        "project": ["packages/example-graphql/tsconfig.*?.json"]
+        "project": ["examples/orm-integration/tsconfig.*?.json"]
       },
       "rules": {}
     },

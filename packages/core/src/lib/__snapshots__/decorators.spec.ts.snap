@@ -1,0 +1,74 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Context 1`] = `
+{
+  "data": {
+    "info": {
+      "version": "1.0.0",
+    },
+  },
+}
+`;
+
+exports[`mutation 1`] = `
+{
+  "data": {
+    "createUser": {
+      "id": 1,
+    },
+  },
+}
+`;
+
+exports[`mutation args validation 1`] = `
+{
+  "data": {
+    "createUser": null,
+  },
+  "errors": [
+    [GraphQLError: Validation error:
+data.username(minLength): Min length is 6],
+  ],
+}
+`;
+
+exports[`query 1`] = `
+{
+  "data": {
+    "getUser": {
+      "id": 1,
+    },
+  },
+}
+`;
+
+exports[`resolveField parent 1`] = `
+{
+  "data": {
+    "getUser": {
+      "id": "9f617521-b9c2-4ab9-a339-3c551c799027",
+      "posts": [],
+    },
+  },
+}
+`;
+
+exports[`resolveField resolves fields 1`] = `
+{
+  "data": {
+    "getUser": {
+      "id": "398cdf36-e3ac-475c-90aa-c70f99add874",
+      "posts": [
+        {
+          "author": {
+            "id": "398cdf36-e3ac-475c-90aa-c70f99add874",
+          },
+          "id": "13fe73c3-af3d-4979-bc2d-f66ca1960a76",
+        },
+      ],
+    },
+  },
+}
+`;
+
+exports[`resolveField unknown property 1`] = `"No field post found on type User for field resolver method posts on resolver UserResolver"`;

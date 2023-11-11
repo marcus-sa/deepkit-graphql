@@ -1,0 +1,28 @@
+diff --git a/dist/cjs/src/compiler.js b/dist/cjs/src/compiler.js
+index 9a7d8f3beed2d8f79d3e38ce576c0927c3b1f5e0..2af97e757f36fcb9edf83b38a446ec1e0c514fe3 100644
+--- a/dist/cjs/src/compiler.js
++++ b/dist/cjs/src/compiler.js
+@@ -1885,8 +1885,8 @@ class ReflectionTransformer {
+                         }
+                         return node;
+                     };
+-                    const updatedParameterType = visitEachChild(parameter.type, searchArgument, this.context);
+                     if (found && isIdentifier(parameter.name)) {
++                    	const updatedParameterType = visitEachChild(parameter.type, searchArgument, this.context);
+                         foundUsers.push({ type: updatedParameterType, parameterName: parameter.name });
+                     }
+                 }
+diff --git a/dist/esm/src/compiler.js b/dist/esm/src/compiler.js
+index f27645f8a84ab52d0ebb6e0fc43fd20a2749e59c..cdf2d897d758762308bebfe4de7d9b895bd6ab2f 100644
+--- a/dist/esm/src/compiler.js
++++ b/dist/esm/src/compiler.js
+@@ -1853,8 +1853,8 @@ export class ReflectionTransformer {
+                         }
+                         return node;
+                     };
+-                    const updatedParameterType = visitEachChild(parameter.type, searchArgument, this.context);
+                     if (found && isIdentifier(parameter.name)) {
++                    	const updatedParameterType = visitEachChild(parameter.type, searchArgument, this.context);
+                         foundUsers.push({ type: updatedParameterType, parameterName: parameter.name });
+                     }
+                 }

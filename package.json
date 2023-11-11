@@ -28,7 +28,7 @@
     "@typescript-eslint/eslint-plugin": "^5.60.1",
     "@typescript-eslint/parser": "^5.60.1",
     "commitlint": "^17.7.1",
-    "esbuild": "^0.17.16",
+    "esbuild": "^0.17.19",
     "eslint": "~8.46.0",
     "eslint-config-prettier": "8.1.0",
     "isbot": "^3.6.13",

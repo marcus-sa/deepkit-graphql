@@ -97,8 +97,8 @@ devDependencies:
     specifier: ^17.6.4
     version: 17.6.4(nx@16.7.4)
   '@deepkit-modules/nx-webpack-plugin':
-    specifier: ^0.2.12
-    version: 0.2.12(@deepkit/type-compiler@1.0.1-alpha.97)(@nx/webpack@16.7.4)
+    specifier: ^0.2.13
+    version: 0.2.13(@deepkit/type-compiler@1.0.1-alpha.97)(@nx/webpack@16.7.4)
   '@deepkit/postgres':
     specifier: 1.0.1-alpha.98
     version: 1.0.1-alpha.98(@deepkit/core@1.0.1-alpha.97)(@deepkit/orm@1.0.1-alpha.98)(@deepkit/sql@1.0.1-alpha.98)(@deepkit/stopwatch@1.0.1-alpha.97)(@deepkit/type@1.0.1-alpha.97)
@@ -1862,8 +1862,8 @@ packages:
       '@jridgewell/trace-mapping': 0.3.9
     dev: true
 
-  /@deepkit-modules/nx-webpack-plugin@0.2.12(@deepkit/type-compiler@1.0.1-alpha.97)(@nx/webpack@16.7.4):
-    resolution: {integrity: sha512-L80zd4INxAWLasrcfi1FX4xSBP3luY5vM25HvsamOtmxxCNlJSBwU+EPGtmbt3QGYZb1tOXaB3m4FJe9aQKqQQ==}
+  /@deepkit-modules/nx-webpack-plugin@0.2.13(@deepkit/type-compiler@1.0.1-alpha.97)(@nx/webpack@16.7.4):
+    resolution: {integrity: sha512-KK85ugPCkinFpeEygbLL+ATxsWomLX3GpcM5cqDV9JAwRke+TopgWt/RMoe9FSnu0Y8oNydOVHpsykO+Ct/Kug==}
     peerDependencies:
       '@deepkit/type-compiler': ^16.8.0
       '@nx/webpack': ^16.7.4

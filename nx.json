@@ -29,7 +29,6 @@
   "targetDefaults": {
     "release": {
       "dependsOn": [
-        "^build",
         "build"
       ],
       "inputs": [

@@ -34,12 +34,12 @@
     "@release-it/bumper": {
       "in": {
         "file": "packages/core/package.version",
-        "path": "text/plain"
+        "type": "text/plain"
       },
       "out": [
         {
           "file": "packages/core/package.version",
-          "path": "text/plain"
+          "type": "text/plain"
         },
         {
           "file": "dist/packages/core/package.json",

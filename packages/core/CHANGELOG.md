@@ -1,5 +1,12 @@
 
 
+## [0.0.5](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.0.4...core-v0.0.5) (2023-11-11)
+
+
+### Documentations
+
+* fix resolvers.md ([47dec88](https://github.com/marcus-sa/deepkit-graphql/commit/47dec88b71546684c4532f83a2287c53fbd2d0a2))
+
 ## [0.0.4](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.0.3...core-v0.0.4) (2023-11-11)
 
 

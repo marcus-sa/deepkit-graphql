@@ -72,7 +72,7 @@
     "@deepkit/workflow": "^1.0.1-alpha.97",
     "graphql": "^16.8.0",
     "graphql-request": "^6.1.0",
-    "graphql-scalars": "^1.22.2",
+    "graphql-scalars": "^1.22.4",
     "radash": "^11.0.0",
     "tslib": "2.6.2"
   },

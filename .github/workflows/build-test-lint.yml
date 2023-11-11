@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     if: contains(inputs.skip, 'build') == false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     if: contains(inputs.skip, 'test') == false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     if: contains(inputs.skip, 'lint') == false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 

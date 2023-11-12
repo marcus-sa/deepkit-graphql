@@ -69,7 +69,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: https://deepkit-graphql.github.io
+      url: deepkit-graphql.github.io
     needs: test
     runs-on: ubuntu-latest
     steps:

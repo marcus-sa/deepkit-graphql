@@ -16,7 +16,8 @@
     <toc-element topic="utility-types.md"/>
     <toc-element topic="scalars.md"/>
     <toc-element topic="resolvers.md">
-      <toc-element topic="context.md"/>
+        <toc-element topic="Middleware.md"/>
+        <toc-element topic="context.md"/>
       <toc-element topic="parent.md"/>
     </toc-element>
     <toc-element topic="query.md"/>

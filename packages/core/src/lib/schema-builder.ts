@@ -1,6 +1,11 @@
 import { ReceiveType, resolveReceiveType, Type } from '@deepkit/type';
 import { ClassType } from '@deepkit/core';
 import {
+  InjectorContext,
+  InjectorInterface,
+  InjectorModule,
+} from '@deepkit/injector';
+import {
   GraphQLFieldConfigMap,
   GraphQLNamedType,
   GraphQLObjectType,
@@ -10,26 +15,36 @@ import {
 
 import { Resolvers } from './resolvers';
 import { TypesBuilder } from './types-builder';
-import { gqlResolverDecorator } from './decorators';
+import { gqlClassDecorator } from './decorators';
 
 export interface SchemaBuilderOptions {
-  readonly resolvers: Resolvers;
   readonly inputTypes?: readonly Type[];
   readonly outputTypes?: readonly Type[];
 }
 
-export function buildSchema(options: SchemaBuilderOptions): GraphQLSchema {
-  return new SchemaBuilder(options).buildSchema();
+export function buildSchema(
+  resolvers: Resolvers,
+  injectorContext: InjectorContext = new InjectorContext(new InjectorModule()),
+  options?: SchemaBuilderOptions,
+): GraphQLSchema {
+  return new SchemaBuilder(resolvers, injectorContext, options).build();
 }
 
 export class SchemaBuilder {
-  private readonly inputTypes = new Set<Type>(this.options.inputTypes);
+  private readonly inputTypes = new Set<Type>(this.options?.inputTypes);
 
-  private readonly outputTypes = new Set<Type>(this.options.outputTypes);
+  private readonly outputTypes = new Set<Type>(this.options?.outputTypes);
 
-  private readonly typesBuilder = new TypesBuilder(this.options.resolvers);
+  private readonly typesBuilder = new TypesBuilder(
+    this.resolvers,
+    this.injectorContext,
+  );
 
-  constructor(private readonly options: SchemaBuilderOptions) {}
+  constructor(
+    private readonly resolvers: Resolvers,
+    private readonly injectorContext: InjectorContext,
+    private readonly options?: SchemaBuilderOptions,
+  ) {}
 
   private buildInputTypes(): readonly GraphQLNamedType[] {
     return [...this.inputTypes].map(type =>
@@ -44,7 +59,7 @@ export class SchemaBuilder {
   }
 
   generateMutationResolverFields(): GraphQLFieldConfigMap<unknown, unknown> {
-    return [...this.options.resolvers.instances].reduce<
+    return [...this.resolvers.instances].reduce<
       GraphQLFieldConfigMap<unknown, unknown>
     >(
       (fields, instance) => ({
@@ -57,7 +72,7 @@ export class SchemaBuilder {
   }
 
   generateQueryResolverFields(): GraphQLFieldConfigMap<unknown, unknown> {
-    return [...this.options.resolvers.instances].reduce<
+    return [...this.resolvers.instances].reduce<
       GraphQLFieldConfigMap<unknown, unknown>
     >(
       (fields, instance) => ({
@@ -70,7 +85,7 @@ export class SchemaBuilder {
   }
 
   private buildRootMutationType(): GraphQLObjectType | undefined {
-    const classTypes = [...this.options.resolvers.classTypes];
+    const classTypes = [...this.resolvers.classTypes];
 
     const someMutations = classTypes.some(classType =>
       this.hasMutationResolvers(classType),
@@ -101,22 +116,22 @@ export class SchemaBuilder {
   }*/
 
   hasQueryResolvers(classType: ClassType): boolean {
-    const resolver = gqlResolverDecorator._fetch(classType);
+    const resolver = gqlClassDecorator._fetch(classType);
     return !!resolver?.queries.size;
   }
 
   hasMutationResolvers(classType: ClassType): boolean {
-    const resolver = gqlResolverDecorator._fetch(classType);
+    const resolver = gqlClassDecorator._fetch(classType);
     return !!resolver?.mutations.size;
   }
 
   hasFieldResolvers(classType: ClassType): boolean {
-    const resolver = gqlResolverDecorator._fetch(classType);
+    const resolver = gqlClassDecorator._fetch(classType);
     return !!resolver?.resolveFields.size;
   }
 
   private buildRootQueryType(): GraphQLObjectType | undefined {
-    const classTypes = [...this.options.resolvers.classTypes];
+    const classTypes = [...this.resolvers.classTypes];
 
     const someQueries = classTypes.some(classType =>
       this.hasQueryResolvers(classType),
@@ -152,7 +167,7 @@ export class SchemaBuilder {
     }
   }
 
-  buildSchema(): GraphQLSchema {
+  build(): GraphQLSchema {
     const mutation = this.buildRootMutationType();
     const query = this.buildRootQueryType();
     const types = [...this.buildInputTypes(), ...this.buildOutputTypes()];

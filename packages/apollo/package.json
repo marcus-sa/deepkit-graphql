@@ -14,9 +14,9 @@
   },
   "peerDependencies": {
     "@deepkit-graphql/core": "*",
-    "@deepkit/app": "*",
-    "@deepkit/http": "*",
-    "@deepkit/framework": "*",
+    "@deepkit/app": "^1.0.1-alpha.105",
+    "@deepkit/http": "^1.0.1-alpha.105",
+    "@deepkit/framework": "^1.0.1-alpha.106",
     "graphql": "^16.8.0"
   },
   "publishConfig": {

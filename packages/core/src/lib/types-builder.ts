@@ -1,12 +1,12 @@
-import { ClassType } from '@deepkit/core';
+import { asyncOperation, isClass } from '@deepkit/core';
+import { InjectorContext } from '@deepkit/injector';
 import {
   ReceiveType,
   ReflectionClass,
   ReflectionKind,
   ReflectionParameter,
   resolveReceiveType,
-  resolveRuntimeType,
-  stringifyType,
+  reflect,
   Type,
   TypeArray,
   TypeClass,
@@ -14,6 +14,13 @@ import {
   TypeNumberBrand,
   TypeObjectLiteral,
   TypeUnion,
+  ReflectionMethod,
+  TypePropertySignature,
+  deserializeFunction,
+  serializer,
+  validateFunction,
+  serializeFunction,
+  ValidationError,
 } from '@deepkit/type';
 import {
   GraphQLEnumType,
@@ -29,15 +36,15 @@ import {
   GraphQLObjectType,
   GraphQLOutputType,
   GraphQLScalarType,
+  GraphQLError,
+  GraphQLFieldResolver,
   GraphQLUnionType,
 } from 'graphql';
 
-import { gqlResolverDecorator, typeResolvers } from './decorators';
-import {
-  createResolveFunction,
-  filterReflectionParametersMetaAnnotationsForArguments,
-  Resolvers,
-} from './resolvers';
+import { Context, GraphQLFields, Instance, InternalMiddleware } from './types';
+import { typeResolvers } from './decorators';
+import { Resolvers } from './resolvers';
+import { TypeNameRequiredError } from './errors';
 import {
   BigInt,
   Void,
@@ -58,56 +65,16 @@ import {
   DateTime,
   Byte,
 } from './scalars';
-
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type Instance<T = any> = T & { readonly constructor: Function };
-
-export type ID = string | number;
-
-export function unwrapPromiseLikeType(type: Type): Type {
-  return type.kind === ReflectionKind.promise ? type.type : type;
-}
-
-const removeNonAlphanumericCharacters = (text: string) =>
-  text.replace(/\W/g, '');
-
-export const getTypeName = (type: Type): string =>
-  removeNonAlphanumericCharacters(stringifyType(type));
-
-export class TypeNameRequiredError extends Error {
-  constructor(readonly type: Type) {
-    super('Type requires a name');
-  }
-}
-
-export class UnknownTypeNameError extends Error {
-  constructor(readonly type: Type) {
-    super('Unknown type name');
-  }
-}
-
-export function requireTypeName(type: TypeObjectLiteral | TypeClass): string {
-  const name = getTypeName(type);
-  if (!name) {
-    throw new TypeNameRequiredError(type);
-  }
-  if (name.startsWith('UnknownTypeName:()=>')) {
-    throw new UnknownTypeNameError(type);
-  }
-  return name;
-}
-
-export type GraphQLFields<T> = Record<string, { readonly type: T }>;
-
-export const PARENT_META_NAME = 'parent';
-
-// eslint-disable-next-line functional/prefer-readonly-type
-export type Parent<T> = T & { __meta?: [typeof PARENT_META_NAME, T] };
-
-export const CONTEXT_META_NAME = 'context';
-
-// eslint-disable-next-line functional/prefer-readonly-type
-export type Context<T> = T & { __meta?: [typeof CONTEXT_META_NAME, T] };
+import {
+  filterReflectionParametersMetaAnnotationsForArguments,
+  getContextMetaAnnotationReflectionParameterIndex,
+  getParentMetaAnnotationReflectionParameterIndex,
+  getTypeName,
+  excludeNullAndUndefinedTypes,
+  requireTypeName,
+  unwrapPromiseLikeType,
+  getClassDecoratorMetadata,
+} from './utils';
 
 export class TypesBuilder {
   private readonly outputObjectTypes = new Map<string, GraphQLObjectType>();
@@ -118,7 +85,10 @@ export class TypesBuilder {
 
   private readonly inputObjectTypes = new Map<string, GraphQLInputObjectType>();
 
-  constructor(private readonly resolvers?: Resolvers) {}
+  constructor(
+    private readonly resolvers: Resolvers,
+    private readonly injectorContext: InjectorContext,
+  ) {}
 
   getScalarType(type: Type): GraphQLScalarType {
     if (type.typeName === 'ID') return GraphQLID;
@@ -233,10 +203,8 @@ export class TypesBuilder {
       return this.unionTypes.get(type)!;
     }
 
-    const typesWithoutNullAndUndefined = type.types.filter(
-      type =>
-        type.kind !== ReflectionKind.undefined &&
-        type.kind !== ReflectionKind.null,
+    const typesWithoutNullAndUndefined = excludeNullAndUndefinedTypes(
+      type.types,
     );
 
     const types = typesWithoutNullAndUndefined.map(type => {
@@ -399,10 +367,8 @@ export class TypesBuilder {
 
     switch (type.kind) {
       case ReflectionKind.union: {
-        const typesWithoutNullAndUndefined = type.types.filter(
-          type =>
-            type.kind !== ReflectionKind.undefined &&
-            type.kind !== ReflectionKind.null,
+        const typesWithoutNullAndUndefined = excludeNullAndUndefinedTypes(
+          type.types,
         );
 
         if (typesWithoutNullAndUndefined.length === 1) {
@@ -588,23 +554,112 @@ export class TypesBuilder {
     return inputObjectType;
   }
 
-  generateMutationResolverFields<T>(
-    instance: T,
-  ): GraphQLFieldConfigMap<unknown, unknown> {
-    const { constructor } = instance as { readonly constructor: ClassType };
-    const resolver = gqlResolverDecorator._fetch(constructor);
-    if (!resolver) {
-      throw new Error(
-        `Missing @graphql.resolver() decorator on ${constructor.name}`,
-      );
+  private async executeMiddleware(
+    middlewares: readonly InternalMiddleware[],
+    context: Context<unknown>,
+  ): Promise<void> {
+    for (const middleware of middlewares) {
+      await asyncOperation<void>(async (resolve, reject) => {
+        const next = (err?: Error) => (err ? reject(err) : resolve());
+
+        if (isClass(middleware)) {
+          await this.injectorContext.get(middleware).execute(context, next);
+        } else {
+          await middleware(context, next);
+        }
+      });
     }
-    const resolverType = resolveRuntimeType(constructor);
+  }
+
+  private createResolveFunction<Resolver, Args extends unknown[] = []>(
+    instance: Resolver,
+    { parameters, name, type }: ReflectionMethod,
+    middlewares: readonly InternalMiddleware[],
+  ): GraphQLFieldResolver<unknown, unknown, any> {
+    const resolve = (instance[name as keyof Resolver] as Function).bind(
+      instance,
+    ) as (...args: Args) => unknown;
+
+    const argsParameters =
+      filterReflectionParametersMetaAnnotationsForArguments(parameters);
+
+    const argsType: TypeObjectLiteral = {
+      kind: ReflectionKind.objectLiteral,
+      types: [],
+    };
+
+    argsType.types = argsParameters.map<TypePropertySignature>(parameter => ({
+      kind: ReflectionKind.propertySignature,
+      parent: argsType,
+      name: parameter.name,
+      type: parameter.type,
+    }));
+
+    const parentParameterIndex =
+      getParentMetaAnnotationReflectionParameterIndex(parameters);
+
+    const contextParameterIndex =
+      getContextMetaAnnotationReflectionParameterIndex(parameters);
+
+    const deserializeArgs = deserializeFunction(
+      { loosely: false },
+      serializer,
+      undefined,
+      argsType,
+    );
+
+    const validateArgs = validateFunction(serializer, argsType);
+
+    const serializeResult = serializeFunction(
+      undefined,
+      serializer,
+      undefined,
+      type.return,
+    );
+
+    return async (parent, _args, context) => {
+      const args = deserializeArgs(_args) as Record<string, unknown>; // might return undefined ?
+      const argsValidationErrors = validateArgs(args);
+      if (argsValidationErrors.length) {
+        const originalError = new ValidationError(argsValidationErrors);
+        throw new GraphQLError(originalError.message, {
+          originalError,
+          path: [name],
+        });
+      }
+
+      await this.executeMiddleware(middlewares, context as Context<unknown>);
+
+      const resolveArgs = argsParameters.map(
+        parameter => args[parameter.name],
+      ) as Parameters<typeof resolve>;
+
+      if (parentParameterIndex !== -1) {
+        // eslint-disable-next-line functional/immutable-data
+        resolveArgs.splice(parentParameterIndex, 0, parent);
+      }
+
+      if (contextParameterIndex !== -1) {
+        // eslint-disable-next-line functional/immutable-data
+        resolveArgs.splice(contextParameterIndex, 0, context);
+      }
+
+      const result = await resolve(...resolveArgs);
+      return serializeResult(result);
+    };
+  }
+
+  generateMutationResolverFields<T>(
+    instance: Instance<T>,
+  ): GraphQLFieldConfigMap<unknown, unknown> {
+    const resolver = getClassDecoratorMetadata(instance.constructor);
+    const resolverType = reflect(instance.constructor);
     const reflectionClass = ReflectionClass.from(resolverType);
 
     const fields = new Map<string, GraphQLFieldConfig<unknown, unknown>>();
 
     // eslint-disable-next-line functional/no-loop-statement
-    for (const [methodName, query] of resolver.mutations.entries()) {
+    for (const [methodName, mutation] of resolver.mutations.entries()) {
       const reflectionMethod = reflectionClass.getMethod(methodName);
 
       const args = this.createInputArgsFromReflectionParameters(
@@ -613,12 +668,16 @@ export class TypesBuilder {
 
       const returnType = this.createReturnType(reflectionMethod.type.return);
 
-      const resolve = createResolveFunction<T>(instance, reflectionMethod);
+      const resolve = this.createResolveFunction<T>(
+        instance,
+        reflectionMethod,
+        [...resolver.middleware, ...mutation.middleware],
+      );
 
-      fields.set(query.name, {
+      fields.set(mutation.name, {
         type: returnType,
-        description: query.description,
-        deprecationReason: query.deprecationReason,
+        description: mutation.description,
+        deprecationReason: mutation.deprecationReason,
         args,
         resolve,
       });
@@ -628,17 +687,11 @@ export class TypesBuilder {
   }
 
   generateFieldResolver<T>(
-    instance: T,
+    instance: Instance<T>,
     fieldName: string,
   ): Pick<GraphQLFieldConfig<unknown, unknown>, 'args' | 'resolve'> {
-    const { constructor } = instance as { readonly constructor: ClassType };
-    const resolver = gqlResolverDecorator._fetch(constructor);
-    if (!resolver) {
-      throw new Error(
-        `Missing @graphql.resolver<T>() decorator on ${constructor.name}`,
-      );
-    }
-    const resolverType = resolveRuntimeType(constructor);
+    const resolver = getClassDecoratorMetadata(instance.constructor);
+    const resolverType = reflect(instance.constructor);
     const reflectionClass = ReflectionClass.from(resolverType);
 
     const field = [...resolver.resolveFields.values()].find(
@@ -652,7 +705,10 @@ export class TypesBuilder {
 
     // const returnType = createReturnType(reflectionMethod.type.return);
 
-    const resolve = createResolveFunction<T>(instance, reflectionMethod);
+    const resolve = this.createResolveFunction<T>(instance, reflectionMethod, [
+      ...resolver.middleware,
+      ...field.middleware,
+    ]);
 
     const args = this.createInputArgsFromReflectionParameters(
       reflectionMethod.parameters,
@@ -667,16 +723,10 @@ export class TypesBuilder {
   }
 
   generateQueryResolverFields<T>(
-    instance: T,
+    instance: Instance<T>,
   ): GraphQLFieldConfigMap<unknown, unknown> {
-    const { constructor } = instance as { readonly constructor: ClassType };
-    const resolver = gqlResolverDecorator._fetch(constructor);
-    if (!resolver) {
-      throw new Error(
-        `Missing @graphql.resolver() decorator on ${constructor.name}`,
-      );
-    }
-    const resolverType = resolveRuntimeType(constructor);
+    const resolver = getClassDecoratorMetadata(instance.constructor);
+    const resolverType = reflect(instance.constructor);
     const reflectionClass = ReflectionClass.from(resolverType);
 
     const fields = new Map<string, GraphQLFieldConfig<unknown, unknown>>();
@@ -691,7 +741,11 @@ export class TypesBuilder {
 
       const returnType = this.createReturnType(reflectionMethod.type.return);
 
-      const resolve = createResolveFunction<T>(instance, reflectionMethod);
+      const resolve = this.createResolveFunction<T>(
+        instance,
+        reflectionMethod,
+        [...resolver.middleware, ...query.middleware],
+      );
 
       fields.set(query.name, {
         type: returnType,
@@ -705,14 +759,8 @@ export class TypesBuilder {
     return Object.fromEntries(fields.entries());
   }
 
-  hasFieldResolver<T>(instance: T, fieldName: string): boolean {
-    const { constructor } = instance as { readonly constructor: ClassType };
-    const resolver = gqlResolverDecorator._fetch(constructor);
-    if (!resolver) {
-      throw new Error(
-        `Missing @graphql.resolver() decorator on ${constructor.name}`,
-      );
-    }
+  hasFieldResolver<T>(instance: Instance<T>, fieldName: string): boolean {
+    const resolver = getClassDecoratorMetadata(instance.constructor);
     return [...resolver.resolveFields.values()].some(
       field => field.name === fieldName,
     );

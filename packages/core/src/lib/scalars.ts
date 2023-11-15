@@ -25,11 +25,8 @@ import {
   GraphQLVoid,
 } from 'graphql-scalars';
 
-export function raise(error: string): never {
-  throw new Error(error);
-}
+import { raise } from './utils';
 
-/** @reflection never */
 export type ValueType =
   | Record<string, unknown>
   | string

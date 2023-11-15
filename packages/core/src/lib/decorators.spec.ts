@@ -14,9 +14,10 @@ import {
 } from '@deepkit/type';
 
 import { graphql } from './decorators';
-import { Context, Parent } from './types-builder';
 import { buildSchema } from './schema-builder';
 import { Resolvers } from './resolvers';
+import { Context, GraphQLMiddleware, Parent } from './types';
+import { InjectorContext, InjectorModule } from '@deepkit/injector';
 
 /*test('invalid return type for mutation', () => {
   expect(() => {
@@ -42,6 +43,174 @@ import { Resolvers } from './resolvers';
   }).toThrowErrorMatchingSnapshot();
 });*/
 
+test('middleware errors', async () => {
+  class TestMiddleware implements GraphQLMiddleware {
+    execute(context: Context<unknown>, next: (err?: Error) => void): void {
+      throw new Error('Error');
+    }
+  }
+
+  @graphql.resolver()
+  class TestResolver {
+    @graphql.middleware(TestMiddleware).query()
+    get(): boolean {
+      return true;
+    }
+  }
+
+  const injectorContext = new InjectorContext(
+    new InjectorModule([TestResolver, TestMiddleware]),
+  );
+
+  const testResolver = injectorContext.get(TestResolver);
+
+  const testResolverSpy = jest.spyOn(testResolver, 'get');
+
+  const testMiddleware = injectorContext.get(TestMiddleware);
+
+  const testMiddlewareExecuteSpy = jest.spyOn(testMiddleware, 'execute');
+
+  const resolvers = new Resolvers([testResolver]);
+
+  const schema = buildSchema(resolvers, injectorContext);
+
+  await executeGraphQL({
+    schema,
+    contextValue: {},
+    source: `{ get }`,
+  });
+
+  expect(testResolverSpy).not.toHaveBeenCalled();
+
+  expect(testMiddlewareExecuteSpy.mock.results[0]).toMatchSnapshot();
+});
+
+test('resolver middleware is invoked', async () => {
+  class TestMiddleware implements GraphQLMiddleware {
+    execute(context: Context<unknown>, next: () => void): void {
+      next();
+    }
+  }
+
+  @graphql.resolver().middleware(TestMiddleware)
+  class TestResolver {
+    @graphql.query()
+    get(): boolean {
+      return true;
+    }
+  }
+
+  const injectorContext = new InjectorContext(
+    new InjectorModule([TestResolver, TestMiddleware]),
+  );
+
+  const testResolver = injectorContext.get(TestResolver);
+
+  const testResolverSpy = jest.spyOn(testResolver, 'get');
+
+  const testMiddleware = injectorContext.get(TestMiddleware);
+
+  const testMiddlewareExecuteSpy = jest.spyOn(testMiddleware, 'execute');
+
+  const resolvers = new Resolvers([testResolver]);
+
+  const schema = buildSchema(resolvers, injectorContext);
+
+  await executeGraphQL({
+    schema,
+    contextValue: {},
+    source: `{ get }`,
+  });
+
+  expect(testMiddlewareExecuteSpy).toHaveBeenCalled();
+
+  expect(testResolverSpy).toHaveBeenCalled();
+});
+
+test('query middleware is invoked', async () => {
+  class TestMiddleware implements GraphQLMiddleware {
+    execute(context: Context<unknown>, next: () => void): void {
+      next();
+    }
+  }
+
+  @graphql.resolver()
+  class TestResolver {
+    @graphql.middleware(TestMiddleware).query()
+    get(): boolean {
+      return true;
+    }
+  }
+
+  const injectorContext = new InjectorContext(
+    new InjectorModule([TestResolver, TestMiddleware]),
+  );
+
+  const testResolver = injectorContext.get(TestResolver);
+
+  const testResolverSpy = jest.spyOn(testResolver, 'get');
+
+  const testMiddleware = injectorContext.get(TestMiddleware);
+
+  const testMiddlewareExecuteSpy = jest.spyOn(testMiddleware, 'execute');
+
+  const resolvers = new Resolvers([testResolver]);
+
+  const schema = buildSchema(resolvers, injectorContext);
+
+  await executeGraphQL({
+    schema,
+    contextValue: {},
+    source: `{ get }`,
+  });
+
+  expect(testMiddlewareExecuteSpy).toHaveBeenCalled();
+
+  expect(testResolverSpy).toHaveBeenCalled();
+});
+
+test('mutation middleware is invoked', async () => {
+  class TestMiddleware implements GraphQLMiddleware {
+    execute(context: Context<unknown>, next: () => void): void {
+      next();
+    }
+  }
+
+  @graphql.resolver()
+  class TestResolver {
+    @graphql.mutation().middleware(TestMiddleware)
+    create(): boolean {
+      return true;
+    }
+  }
+
+  const injectorContext = new InjectorContext(
+    new InjectorModule([TestResolver, TestMiddleware]),
+  );
+
+  const testResolver = injectorContext.get(TestResolver);
+
+  const testResolverSpy = jest.spyOn(testResolver, 'create');
+
+  const testMiddleware = injectorContext.get(TestMiddleware);
+
+  const testMiddlewareExecuteSpy = jest.spyOn(testMiddleware, 'execute');
+
+  const resolvers = new Resolvers([testResolver]);
+
+  const schema = buildSchema(resolvers, injectorContext);
+
+  await executeGraphQL({
+    schema,
+    contextValue: {},
+    source: `mutation { create }`,
+  });
+
+  expect(testMiddlewareExecuteSpy).toHaveBeenCalled();
+
+  expect(testResolverSpy).toHaveBeenCalled();
+});
+
 test('mutation', async () => {
   interface User {
     readonly id: integer & PositiveNoZero;
@@ -63,7 +232,7 @@ test('mutation', async () => {
 
   const resolvers = new Resolvers([new UserResolver()]);
 
-  const schema = buildSchema({ resolvers });
+  const schema = buildSchema(resolvers);
 
   await expect(
     executeGraphQL({
@@ -89,7 +258,7 @@ test('query', async () => {
 
   const resolvers = new Resolvers([new UserResolver()]);
 
-  const schema = buildSchema({ resolvers });
+  const schema = buildSchema(resolvers);
 
   await expect(
     executeGraphQL({
@@ -120,7 +289,7 @@ test('mutation args validation', async () => {
 
   const resolvers = new Resolvers([new UserResolver()]);
 
-  const schema = buildSchema({ resolvers });
+  const schema = buildSchema(resolvers);
 
   await expect(
     executeGraphQL({
@@ -154,7 +323,7 @@ test('Context', async () => {
 
   const resolvers = new Resolvers([new TestResolver()]);
 
-  const schema = buildSchema({ resolvers });
+  const schema = buildSchema(resolvers);
 
   await expect(
     executeGraphQL({
@@ -211,7 +380,7 @@ describe('resolveField', () => {
 
     const resolvers = new Resolvers([new UserResolver(), new PostResolver()]);
 
-    const schema = buildSchema({ resolvers });
+    const schema = buildSchema(resolvers);
 
     await expect(
       executeGraphQL({
@@ -264,7 +433,7 @@ describe('resolveField', () => {
 
     const resolvers = new Resolvers([new UserResolver(), new PostResolver()]);
 
-    const schema = buildSchema({ resolvers });
+    const schema = buildSchema(resolvers);
 
     await expect(
       executeGraphQL({
@@ -323,7 +492,7 @@ describe('resolveField', () => {
     expect(() => {
       @graphql.resolver<User>()
       class UserResolver {
-        @graphql.resolveField('post')
+        @graphql.resolveField({ name: 'post' })
         posts(): readonly Post[] | null {
           return [];
         }

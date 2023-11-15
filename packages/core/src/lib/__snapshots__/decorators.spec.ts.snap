@@ -10,6 +10,13 @@ exports[`Context 1`] = `
 }
 `;
 
+exports[`middleware errors 1`] = `
+{
+  "type": "throw",
+  "value": [Error: Error],
+}
+`;
+
 exports[`mutation 1`] = `
 {
   "data": {

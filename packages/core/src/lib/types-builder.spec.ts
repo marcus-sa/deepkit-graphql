@@ -1,4 +1,5 @@
 import { GraphQLEnumType, GraphQLID, GraphQLUnionType } from 'graphql';
+import { InjectorContext, InjectorModule } from '@deepkit/injector';
 import {
   float,
   float32,
@@ -12,7 +13,6 @@ import {
   Positive,
   PositiveNoZero,
   ReflectionMethod,
-  stringifyType,
   typeOf,
   UUID,
 } from '@deepkit/type';
@@ -40,13 +40,18 @@ import {
   GraphQLFloat,
 } from 'graphql';
 
-import { TypesBuilder, ID, getTypeName } from './types-builder';
+import { TypesBuilder } from './types-builder';
+import { ID } from './types';
+import { Resolvers } from './resolvers';
 
 describe('TypesBuilder', () => {
   let builder: TypesBuilder;
 
   beforeEach(() => {
-    builder = new TypesBuilder();
+    builder = new TypesBuilder(
+      new Resolvers([]),
+      new InjectorContext(new InjectorModule()),
+    );
   });
 
   test('ID', () => {
@@ -518,46 +523,5 @@ describe('TypesBuilder', () => {
     }
 
     console.log(typeOf<Vegetable>());
-  });
-});
-
-describe('getTypeName', () => {
-  test('union', () => {
-    interface Animal {
-      readonly type: string;
-    }
-
-    interface Dog extends Animal {
-      readonly type: 'dog';
-    }
-
-    interface Cat extends Animal {
-      readonly type: 'cat';
-    }
-
-    expect(getTypeName(typeOf<Dog | Cat>())).toMatchInlineSnapshot(`"DogCat"`);
-  });
-
-  test.todo('intersection');
-
-  test('Pick', async () => {
-    interface Test {
-      readonly id: integer;
-      readonly username: string;
-    }
-
-    expect(getTypeName(typeOf<Pick<Test, 'id'>>())).toMatchInlineSnapshot(
-      `"PickTestid"`,
-    );
-  });
-
-  test('generic interface', async () => {
-    interface Test2<T> {
-      readonly name: T;
-    }
-
-    expect(
-      getTypeName(typeOf<Test2<'deepkit'>>()),
-    ).toMatchInlineSnapshot(`"Test2deepkit"`);
   });
 });

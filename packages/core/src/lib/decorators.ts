@@ -9,60 +9,35 @@ import {
   ExtractApiDataType,
   ExtractClass,
   mergeDecorator,
+  PropertyDecoratorFn,
   PropertyDecoratorResult,
   ReceiveType,
+  reflect,
   ReflectionClass,
   ReflectionKind,
   resolveReceiveType,
-  resolveRuntimeType,
-  Type,
   TypeClass,
   TypeObjectLiteral,
   UnionToIntersection,
 } from '@deepkit/type';
 
-import { requireTypeName, unwrapPromiseLikeType } from './types-builder';
+import { requireTypeName } from './utils';
+import { Instance, InternalMiddleware } from './types';
 
 export const typeResolvers = new Map<string, ClassType>();
 
-/*export function isValidMethodReturnType(
-  classType: ClassType,
-  methodName: string,
-): boolean {
-  const resolverType = resolveRuntimeType(classType);
-  const reflectionClass = ReflectionClass.from(resolverType);
-  const method = reflectionClass.getMethod(methodName);
-  let returnType = method.getReturnType();
-  returnType = unwrapPromiseLikeType(returnType);
-
-  return returnType.kind !== ReflectionKind.union
-    ? returnType.kind === ReflectionKind.objectLiteral ||
-        returnType.kind === ReflectionKind.class
-    : returnType.types.some(
-        type =>
-          type.kind === ReflectionKind.objectLiteral ||
-          type.kind === ReflectionKind.class ||
-          type.kind === ReflectionKind.null ||
-          type.kind === ReflectionKind.undefined,
-      );
-}*/
-
-class GraphQLResolver {
+export class GraphQLClassMetadata {
   type?: TypeClass | TypeObjectLiteral;
-
   classType: ClassType;
-
-  readonly mutations = new Map<string, GraphQLMutationMetadata>();
-
-  readonly queries = new Map<string, GraphQLQueryMetadata>();
-
-  readonly resolveFields = new Map<string, GraphQLFieldMetadata>();
-
-  readonly checks = new Set<(decorator: GraphQLResolverDecorator) => void>();
+  middleware: ReadonlySet<InternalMiddleware> = new Set<InternalMiddleware>();
+  readonly mutations = new Map<string, GraphQLPropertyMetadata>();
+  readonly queries = new Map<string, GraphQLPropertyMetadata>();
+  readonly resolveFields = new Map<string, GraphQLPropertyMetadata>();
+  readonly checks = new Set<(decorator: GraphQLClassDecorator) => void>();
 }
 
-class GraphQLResolverDecorator {
-  t = new GraphQLResolver();
+export class GraphQLClassDecorator {
+  t = new GraphQLClassMetadata();
 
   onDecorator(classType: ClassType) {
     this.t.classType = classType;
@@ -95,143 +70,119 @@ class GraphQLResolverDecorator {
     this.t.checks.forEach(check => check(this));
   }
 
-  addMutation(property: string, mutation: GraphQLMutationMetadata) {
+  addMutation(property: string, mutation: GraphQLPropertyMetadata) {
     this.t.mutations.set(property, mutation);
   }
 
-  addQuery(property: string, query: GraphQLQueryMetadata) {
+  addQuery(property: string, query: GraphQLPropertyMetadata) {
     this.t.queries.set(property, query);
   }
 
-  addResolveField(property: string, field: GraphQLFieldMetadata) {
+  addResolveField(property: string, field: GraphQLPropertyMetadata) {
     this.t.resolveFields.set(property, field);
   }
 
-  addCheck(check: (decorator: GraphQLResolverDecorator) => void) {
+  addCheck(check: (decorator: GraphQLClassDecorator) => void) {
     this.t.checks.add(check);
+  }
+
+  // eslint-disable-next-line functional/prefer-readonly-type
+  middleware(...middleware: InternalMiddleware[]) {
+    this.t.middleware = new Set(middleware);
   }
 }
 
 interface GraphQLQueryOptions {
+  name?: string;
   description?: string;
   deprecationReason?: string;
 }
-
-export class GraphQLQueryMetadata implements GraphQLQueryOptions {
-  name: string;
-  classType: ClassType;
-  description?: string;
-  deprecationReason?: string;
-  readonly checks = new Set<(decorator: GraphQLResolverDecorator) => void>();
-}
-
-class GraphQLQueryDecorator {
-  t = new GraphQLQueryMetadata();
-
-  onDecorator(classType: ClassType, property: string | undefined) {
-    if (!property) return;
-    this.t.name = property;
-    this.t.classType = classType;
-    gqlResolverDecorator.addQuery(property, this.t)(classType);
-
-    this.t.checks.forEach(check =>
-      gqlResolverDecorator.addCheck(check)(classType),
-    );
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  query(options?: GraphQLQueryOptions) {
-    this.t.description = options?.description;
-    this.t.deprecationReason = options?.deprecationReason;
-
-    /*this.t.checks.add(() => {
-      if (!isValidMethodReturnType(this.t.classType, this.t.name)) {
-        throw new Error(
-          'Only classes and interfaces are supported as return types for methods decorated by @graphql.query()',
-        );
-      }
-    });*/
-  }
-}
-
-export const gqlQueryDecorator: PropertyDecoratorResult<
-  typeof GraphQLQueryDecorator
-> = createPropertyDecoratorContext(GraphQLQueryDecorator);
 
 interface GraphQLMutationOptions {
+  name?: string;
   description?: string;
   deprecationReason?: string;
 }
 
-export class GraphQLMutationMetadata implements GraphQLMutationOptions {
+interface GraphQLResolveFieldOptions {
+  name?: string;
+  description?: string;
+  deprecationReason?: string;
+}
+
+export class GraphQLPropertyMetadata implements GraphQLQueryOptions {
   name: string;
-  classType: ClassType;
-  description?: string;
-  deprecationReason?: string;
-  readonly checks = new Set<(decorator: GraphQLResolverDecorator) => void>();
-}
-
-class GraphQLMutationDecorator {
-  t = new GraphQLMutationMetadata();
-
-  onDecorator(classType: ClassType, property: string | undefined) {
-    if (!property) return;
-    this.t.name = property;
-    this.t.classType = classType;
-    gqlResolverDecorator.addMutation(property, this.t)(classType);
-
-    this.t.checks.forEach(check =>
-      gqlResolverDecorator.addCheck(check)(classType),
-    );
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  mutation(options?: GraphQLMutationOptions) {
-    this.t.description = options?.description;
-    this.t.deprecationReason = options?.deprecationReason;
-
-    /*this.t.checks.add(() => {
-      if (!isValidMethodReturnType(this.t.classType, this.t.name)) {
-        throw new Error(
-          'Only classes and interfaces are supported as return types for methods decorated by @graphql.mutation()',
-        );
-      }
-    });*/
-  }
-}
-
-export const gqlMutationDecorator: PropertyDecoratorResult<
-  typeof GraphQLMutationDecorator
-> = createPropertyDecoratorContext(GraphQLMutationDecorator);
-
-export class GraphQLFieldMetadata {
   property: string;
   classType: ClassType;
-  name: string;
-
-  readonly checks = new Set<(decorator: GraphQLResolverDecorator) => void>();
+  middleware: Set<InternalMiddleware> = new Set<InternalMiddleware>();
+  type: 'query' | 'mutation' | 'subscription' | 'resolveField';
+  description?: string;
+  deprecationReason?: string;
+  readonly checks = new Set<(decorator: GraphQLClassDecorator) => void>();
 }
 
-class GraphQLFieldDecorator {
-  t = new GraphQLFieldMetadata();
+class GraphQLPropertyDecorator {
+  t = new GraphQLPropertyMetadata();
 
   onDecorator(classType: ClassType, property: string | undefined) {
     if (!property) return;
     this.t.property = property;
     this.t.name ||= property;
     this.t.classType = classType;
-    gqlResolverDecorator.addResolveField(property, this.t)(classType);
 
-    this.t.checks.forEach(check =>
-      gqlResolverDecorator.addCheck(check)(classType),
-    );
+    gqlClassDecorator.addCheck(() => {
+      switch (this.t.type) {
+        case 'mutation':
+          gqlClassDecorator.addMutation(property, this.t)(classType);
+          break;
+
+        case 'query':
+          gqlClassDecorator.addQuery(property, this.t)(classType);
+          break;
+
+        case 'resolveField':
+          gqlClassDecorator.addResolveField(property, this.t)(classType);
+          break;
+
+        case 'subscription':
+          throw new Error('Not yet implemented');
+
+        default:
+          throw new Error('Invalid type');
+      }
+    })(classType);
+
+    this.t.checks.forEach(check => {
+      gqlClassDecorator.addCheck(check)(classType);
+    });
+  }
+
+  query(options?: GraphQLQueryOptions) {
+    if (options?.name) {
+      this.t.name = options.name;
+    }
+    this.t.type = 'query';
+    this.t.description = options?.description;
+    this.t.deprecationReason = options?.deprecationReason;
+  }
+
+  mutation(options?: GraphQLMutationOptions) {
+    if (options?.name) {
+      this.t.name = options.name;
+    }
+    this.t.type = 'mutation';
+    this.t.description = options?.description;
+    this.t.deprecationReason = options?.deprecationReason;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  resolveField(name?: string) {
-    if (name) {
-      this.t.name = name;
+  resolveField(options?: GraphQLResolveFieldOptions) {
+    if (options?.name) {
+      this.t.name = options.name;
     }
+    this.t.type = 'resolveField';
+    this.t.description = options?.description;
+    this.t.deprecationReason = options?.deprecationReason;
 
     this.t.checks.add(resolverDecorator => {
       if (!resolverDecorator.t.type) {
@@ -240,7 +191,7 @@ class GraphQLFieldDecorator {
         );
       }
 
-      const resolverType = resolveRuntimeType(this.t.classType);
+      const resolverType = reflect(this.t.classType);
       const reflectionClass = ReflectionClass.from(resolverType);
 
       if (!reflectionClass.hasMethod(this.t.name)) {
@@ -251,39 +202,53 @@ class GraphQLFieldDecorator {
       }
     });
   }
+
+  // TODO: subscriptions
+  // subscription(options?: GraphQLSubscriptionOptions) {
+  //   this.t.type = 'subscription';
+  //   this.t.description = options?.description;
+  //   this.t.deprecationReason = options?.deprecationReason;
+  // }
+
+  // eslint-disable-next-line functional/prefer-readonly-type
+  middleware(...middleware: InternalMiddleware[]) {
+    this.t.middleware = new Set(middleware);
+    console.log(this);
+  }
 }
 
-export const gqlFieldDecorator: PropertyDecoratorResult<
-  typeof GraphQLFieldDecorator
-> = createPropertyDecoratorContext(GraphQLFieldDecorator);
+export const gqlPropertyDecorator: PropertyDecoratorResult<
+  typeof GraphQLPropertyDecorator
+> = createPropertyDecoratorContext(GraphQLPropertyDecorator);
 
-//this workaround is necessary since generic functions (necessary for response<T>) are lost during a mapped type and changed ReturnType
+// this workaround is necessary since generic functions (necessary for response<T>) are lost during a mapped type and changed ReturnType
 // eslint-disable-next-line @typescript-eslint/ban-types
-type GraphQLResolverFluidDecorator<T, D extends Function> = {
+type GraphQLClassFluidDecorator<T, D extends Function> = {
   [name in keyof T]: name extends 'resolver'
-    ? <For>(type?: ReceiveType<For>) => D & GraphQLResolverFluidDecorator<T, D>
+    ? <For>(type?: ReceiveType<For>) => D & GraphQLClassFluidDecorator<T, D>
     : T[name] extends (...args: infer K) => any
-    ? (...args: K) => D & GraphQLResolverFluidDecorator<T, D>
-    : D &
-        GraphQLResolverFluidDecorator<T, D> & { _data: ExtractApiDataType<T> };
+    ? (...args: K) => D & GraphQLClassFluidDecorator<T, D>
+    : D & GraphQLClassFluidDecorator<T, D> & { _data: ExtractApiDataType<T> };
 };
 
-type GraphQLResolverClassDecoratorResult = GraphQLResolverFluidDecorator<
-  ExtractClass<typeof GraphQLResolverDecorator>,
+type GraphQLClassDecoratorResult = GraphQLClassFluidDecorator<
+  ExtractClass<typeof GraphQLClassDecorator>,
   ClassDecoratorFn
 > &
-  DecoratorAndFetchSignature<typeof GraphQLResolverDecorator, ClassDecoratorFn>;
+  DecoratorAndFetchSignature<typeof GraphQLClassDecorator, ClassDecoratorFn>;
 
-export const gqlResolverDecorator: GraphQLResolverClassDecoratorResult =
-  createClassDecoratorContext(GraphQLResolverDecorator);
+export const gqlClassDecorator: GraphQLClassDecoratorResult =
+  createClassDecoratorContext(GraphQLClassDecorator);
 
 //this workaround is necessary since generic functions are lost during a mapped type and changed ReturnType
 type GraphQLMerge<U> = {
   [K in keyof U]: K extends 'resolver'
-    ? <For>(type?: ReceiveType<For>) => ClassDecoratorFn & U
+    ? <For>(
+        type?: ReceiveType<For>,
+      ) => (PropertyDecoratorFn | ClassDecoratorFn) & U
     : U[K] extends (...a: infer A) => infer R
     ? R extends DualDecorator
-      ? (...a: A) => ClassDecoratorFn & R & U
+      ? (...a: A) => (PropertyDecoratorFn | ClassDecoratorFn) & R & U
       : (...a: A) => R
     : never;
 };
@@ -292,25 +257,12 @@ type MergedGraphQL<T extends any[]> = GraphQLMerge<
   Omit<UnionToIntersection<T[number]>, '_fetch' | 't'>
 >;
 
-export type GraphQLDecorator = ClassDecoratorFn &
-  GraphQLResolverFluidDecorator<GraphQLResolverDecorator, ClassDecoratorFn>;
-
 export type MergedGraphQLDecorator = Omit<
-  MergedGraphQL<
-    [
-      typeof gqlResolverDecorator,
-      typeof gqlFieldDecorator,
-      typeof gqlMutationDecorator,
-      typeof gqlQueryDecorator,
-    ]
-  >,
+  MergedGraphQL<[typeof gqlClassDecorator, typeof gqlPropertyDecorator]>,
   'addMutation' | 'addQuery' | 'addResolveField' | 'onDecorator' | 'addCheck'
 >;
 
-// TODO: subscriptions
 export const graphql: MergedGraphQLDecorator = mergeDecorator(
-  gqlResolverDecorator,
-  gqlFieldDecorator,
-  gqlMutationDecorator,
-  gqlQueryDecorator,
+  gqlClassDecorator,
+  gqlPropertyDecorator,
 ) as any as MergedGraphQLDecorator;

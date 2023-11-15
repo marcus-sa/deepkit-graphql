@@ -8,14 +8,18 @@ import {
 
 import { Driver } from './driver';
 import { DeepkitGraphQLResolvers, Resolvers } from './resolvers';
-import { buildSchema } from './schema-builder';
+import { SchemaBuilder } from './schema-builder';
 
 export class GraphQLServer {
+  private readonly injectorContext: InjectorContext;
+
   constructor(
     private readonly resolvers: DeepkitGraphQLResolvers,
-    private readonly injectorContext: InjectorContext,
     private readonly driver: Driver,
-  ) {}
+    injectorContext: InjectorContext,
+  ) {
+    this.injectorContext = injectorContext.createChildScope('graphql');
+  }
 
   private createResolvers(): Resolvers {
     return new Resolvers(
@@ -28,8 +32,8 @@ export class GraphQLServer {
   @eventDispatcher.listen(onServerMainBootstrapDone)
   async onServerMainBootstrapDone(): Promise<void> {
     const resolvers = this.createResolvers();
-
-    const schema = buildSchema({ resolvers });
+    const schemaBuilder = new SchemaBuilder(resolvers, this.injectorContext);
+    const schema = schemaBuilder.build();
     await this.driver.start(schema);
   }
 

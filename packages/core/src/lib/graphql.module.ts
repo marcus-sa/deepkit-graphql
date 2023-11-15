@@ -3,7 +3,7 @@ import { ControllerConfig } from '@deepkit/app';
 import { ReceiveType, resolveReceiveType } from '@deepkit/type';
 import { ClassType } from '@deepkit/core';
 
-import { gqlResolverDecorator } from './decorators';
+import { gqlClassDecorator } from './decorators';
 import { DeepkitGraphQLResolvers } from './resolvers';
 import { GraphQLServer } from './graphql-server';
 import { Driver } from './driver';
@@ -27,7 +27,7 @@ export class GraphQLModule extends createModule({
     this.addProvider({
       provide: Driver,
       useClass: this.driver,
-    })
+    });
   }
 
   // TODO
@@ -42,11 +42,11 @@ export class GraphQLModule extends createModule({
   ): void {
     if (!controller) return;
 
-    const resolver = gqlResolverDecorator._fetch(controller);
+    const resolver = gqlClassDecorator._fetch(controller);
     if (!resolver) return;
 
     if (!module.isProvided(controller)) {
-      module.addProvider({ provide: controller });
+      module.addProvider({ provide: controller, scope: 'graphql' });
     }
 
     this.resolvers.add({ controller, module });

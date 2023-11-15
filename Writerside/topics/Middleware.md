@@ -1,3 +1,3 @@
-# Queries
+# InternalMiddleware
 
 Start typing here...

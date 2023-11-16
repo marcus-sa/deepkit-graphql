@@ -1,8 +1,12 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 patchedDependencies:
   '@deepkit/type-compiler@1.0.1-alpha.105':
-    hash: erov6mttchfnmo6ngfsigazd7e
+    hash: nkgip3erfincywdbg32tw73w7a
     path: patches/@deepkit__type-compiler@1.0.1-alpha.105.patch
 
 dependencies:
@@ -62,7 +66,7 @@ dependencies:
     version: 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)
   '@deepkit/type-compiler':
     specifier: 1.0.1-alpha.105
-    version: 1.0.1-alpha.105(patch_hash=erov6mttchfnmo6ngfsigazd7e)(typescript@5.2.2)
+    version: 1.0.1-alpha.105(patch_hash=nkgip3erfincywdbg32tw73w7a)(typescript@5.2.2)
   '@deepkit/workflow':
     specifier: 1.0.1-alpha.105
     version: 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
@@ -1864,7 +1868,7 @@ packages:
       '@deepkit/type-compiler': ^16.8.0
       '@nx/webpack': ^16.7.4
     dependencies:
-      '@deepkit/type-compiler': 1.0.1-alpha.105(patch_hash=erov6mttchfnmo6ngfsigazd7e)(typescript@5.2.2)
+      '@deepkit/type-compiler': 1.0.1-alpha.105(patch_hash=nkgip3erfincywdbg32tw73w7a)(typescript@5.2.2)
       '@nx/webpack': 16.7.4(@types/node@18.7.1)(esbuild@0.17.17)(nx@16.7.4)(typescript@5.2.2)(verdaccio@5.0.4)
       tslib: 2.6.2
     dev: true
@@ -2296,7 +2300,7 @@ packages:
   /@deepkit/topsort@1.0.1-alpha.105:
     resolution: {integrity: sha512-+g0Opkg+08OGPcIQ+rygin7V2LcWo/lgO3Dm+XsojSrkzS5fJMwupQKZACRrJ4EK/lJSrh5fHqmJNMHJPudeTw==}
 
-  /@deepkit/type-compiler@1.0.1-alpha.105(patch_hash=erov6mttchfnmo6ngfsigazd7e)(typescript@5.2.2):
+  /@deepkit/type-compiler@1.0.1-alpha.105(patch_hash=nkgip3erfincywdbg32tw73w7a)(typescript@5.2.2):
     resolution: {integrity: sha512-2maUhKgicn4xJaERh0hd5ZoW6tGLc9VQquFNA6QMCQ0XEwq3ptyAMP/Y4UI8NphQCzhSdteuBg1+1U5hZcvH2g==}
     hasBin: true
     requiresBuild: true
@@ -15896,7 +15900,3 @@ packages:
     resolution: {integrity: sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==}
     engines: {node: '>=12.20'}
     dev: true
-
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false

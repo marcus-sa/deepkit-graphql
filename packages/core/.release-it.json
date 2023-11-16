@@ -55,15 +55,14 @@
   },
   "npm": {
     "publishPath": "dist/packages/core",
-    "publish": false
+    "publish": true
   },
   "github": {
     "release": true,
     "releaseName": "core ${version}"
   },
   "hooks": {
-    "after:bump": "git checkout -- package.json",
-    "before:github:release": "npm publish dist/packages/core --allow-same-version"
+    "after:bump": "git checkout -- package.json"
   },
   "ci": true
 }

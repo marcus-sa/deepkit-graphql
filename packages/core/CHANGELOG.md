@@ -1,5 +1,13 @@
 
 
+## [0.0.4](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.0.8...core-v0.0.4) (2023-11-16)
+
+
+### Documentations
+
+* attempt to fix algolia indexing ([4a76143](https://github.com/marcus-sa/deepkit-graphql/commit/4a76143689fa6cabb49148d83bfb425b626315fe))
+* fix writerside.cfg ([8d24a99](https://github.com/marcus-sa/deepkit-graphql/commit/8d24a992e4290c4f73b548e8c0012cbaba7cb3ad))
+
 ## 0.0.3 (2023-11-16)
 
 

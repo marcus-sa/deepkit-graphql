@@ -55,15 +55,14 @@
   },
   "npm": {
     "publishPath": "dist/packages/apollo",
-    "publish": false
+    "publish": true
   },
   "github": {
     "release": true,
     "releaseName": "apollo ${version}"
   },
   "hooks": {
-    "after:bump": "git checkout -- package.json",
-    "before:github:release": "npm publish dist/packages/apollo --allow-same-version"
+    "after:bump": "git checkout -- package.json"
   },
   "ci": true
 }

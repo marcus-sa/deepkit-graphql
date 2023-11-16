@@ -359,7 +359,6 @@ describe('resolveField', () => {
     class PostResolver {
       @graphql.resolveField()
       async author(post: Parent<Post>): Promise<User> {
-        console.log(post);
         return cast<User>({});
       }
     }

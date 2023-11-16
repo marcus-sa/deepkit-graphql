@@ -213,7 +213,6 @@ class GraphQLPropertyDecorator {
   // eslint-disable-next-line functional/prefer-readonly-type
   middleware(...middleware: InternalMiddleware[]) {
     this.t.middleware = new Set(middleware);
-    console.log(this);
   }
 }
 

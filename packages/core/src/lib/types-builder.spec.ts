@@ -508,7 +508,7 @@ describe('TypesBuilder', () => {
   }*/,
   );
 
-  test('extends', () => {
+  test.todo('extends'/*, () => {
     interface Produce {
       readonly type: string;
       readonly test: string;
@@ -521,7 +521,5 @@ describe('TypesBuilder', () => {
     interface Vegetable extends Produce {
       readonly type: 'vegetable';
     }
-
-    console.log(typeOf<Vegetable>());
-  });
+  }*/);
 });

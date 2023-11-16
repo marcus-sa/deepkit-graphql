@@ -165,7 +165,6 @@ export class TypesBuilder {
         return String;
 
       default:
-        console.log(type);
         throw new Error(`Kind ${type.kind} is not supported`);
     }
   }

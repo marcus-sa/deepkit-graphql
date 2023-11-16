@@ -57,6 +57,7 @@
     "@deepkit/core": "1.0.1-alpha.105",
     "@deepkit/core-rxjs": "1.0.1-alpha.105",
     "@deepkit/event": "1.0.1-alpha.105",
+    "@deepkit/filesystem": "1.0.1-alpha.105",
     "@deepkit/framework": "1.0.1-alpha.106",
     "@deepkit/http": "1.0.1-alpha.105",
     "@deepkit/injector": "1.0.1-alpha.105",

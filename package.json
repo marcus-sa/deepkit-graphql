@@ -24,7 +24,7 @@
     "@release-it/bumper": "^5.1.0",
     "@release-it/conventional-changelog": "^7.0.1",
     "@types/jest": "^29.4.0",
-    "@types/node": "~18.7.1",
+    "@types/node": "~20.9.1",
     "@typescript-eslint/eslint-plugin": "^5.60.1",
     "@typescript-eslint/parser": "^5.60.1",
     "commitlint": "^17.7.1",

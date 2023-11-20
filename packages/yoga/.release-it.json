@@ -1,0 +1,69 @@
+{
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "preset": {
+        "name": "conventionalcommits",
+        "types": [
+          {
+            "type": "feat",
+            "section": "Features"
+          },
+          {
+            "type": "fix",
+            "section": "Bug Fixes"
+          },
+          {
+            "type": "refactor",
+            "section": "Refactor"
+          },
+          {
+            "type": "docs",
+            "section": "Documentations"
+          },
+          {
+            "type": "revert",
+            "section": "Revert"
+          }
+        ]
+      },
+      "infile": "packages/yoga/CHANGELOG.md",
+      "parserOpts": {
+        "headerPattern": "^(\\w*)(?:\\((yoga*)\\))?\\: (.*)$"
+      }
+    },
+    "@release-it/bumper": {
+      "in": {
+        "file": "packages/yoga/package.version",
+        "type": "text/plain"
+      },
+      "out": [
+        {
+          "file": "packages/yoga/package.version",
+          "type": "text/plain"
+        },
+        {
+          "file": "dist/packages/yoga/package.json",
+          "path": "version"
+        }
+      ]
+    }
+  },
+  "git": {
+    "commitMessage": "chore(yoga): release ${version}",
+    "tagName": "yoga-v${version}",
+    "requireCleanWorkingDir": false
+  },
+  "npm": {
+    "publishPath": "dist/packages/yoga",
+    "publish": false
+  },
+  "github": {
+    "release": true,
+    "releaseName": "yoga ${version}"
+  },
+  "hooks": {
+    "after:bump": "git checkout -- package.json",
+    "before:github:release": "npm publish dist/packages/yoga"
+  },
+  "ci": true
+}

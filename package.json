@@ -74,6 +74,7 @@
     "graphql": "^16.8.0",
     "graphql-request": "^6.1.0",
     "graphql-scalars": "^1.22.2",
+    "graphql-yoga": "^5.0.0",
     "radash": "^11.0.0",
     "tslib": "2.6.2"
   },

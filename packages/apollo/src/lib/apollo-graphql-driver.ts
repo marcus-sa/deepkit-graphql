@@ -19,12 +19,12 @@ export class ApolloDriver extends Driver {
   private server?: ApolloServer | null;
 
   constructor(
-    private readonly appServer: ApplicationServer,
-    private readonly webWorkerFactory: WebWorkerFactory,
+    appServer: ApplicationServer,
+    webWorkerFactory: WebWorkerFactory,
     private readonly config: ApolloGraphQLConfig,
     private readonly plugins: ApolloServerPlugins,
   ) {
-    super();
+    super(appServer, webWorkerFactory);
   }
 
   async onRequest(event: typeof httpWorkflow.onRequest.event): Promise<void> {
@@ -85,20 +85,7 @@ export class ApolloDriver extends Driver {
   }
 
   async start(schema: GraphQLSchema): Promise<void> {
-    let httpWorker: WebWorker & any;
-    try {
-      httpWorker = this.appServer.getHttpWorker() as any;
-    } catch {
-      (this.appServer as any).httpWorker = this.webWorkerFactory.create(
-        1,
-        this.appServer.config,
-      );
-      (this.appServer as any).httpWorker.start();
-      httpWorker = this.appServer.getHttpWorker() as any;
-    }
-
-    const httpServer: https.Server | http.Server =
-      httpWorker.servers || httpWorker.server;
+    const httpServer = this.getOrCreateHttpServer();
 
     this.server = new ApolloServer({
       schema,
@@ -108,6 +95,7 @@ export class ApolloDriver extends Driver {
       ],
       ...this.config,
     });
+
     await this.server.start();
   }
 

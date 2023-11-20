@@ -1,0 +1,26 @@
+{
+  "name": "@deepkit-graphql/yoga",
+  "version": "0.0.0",
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "typings": "./src/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marcus-sa/deepkit-graphql.git"
+  },
+  "dependencies": {
+    "tslib": "2.6.2",
+    "graphql-yoga": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@deepkit-graphql/core": "*",
+    "@deepkit/app": "^1.0.1-alpha.105",
+    "@deepkit/http": "^1.0.1-alpha.105",
+    "@deepkit/framework": "^1.0.1-alpha.106",
+    "graphql": "^16.8.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "reflection": true
+}

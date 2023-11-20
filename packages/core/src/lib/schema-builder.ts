@@ -71,6 +71,22 @@ export class SchemaBuilder {
     );
   }
 
+  generateSubscriptionResolverFields(): GraphQLFieldConfigMap<
+    unknown,
+    unknown
+  > {
+    return [...this.resolvers.instances].reduce<
+      GraphQLFieldConfigMap<unknown, unknown>
+    >(
+      (fields, instance) => ({
+        // TODO: validate that fields don't override each other
+        ...fields,
+        ...this.typesBuilder.generateSubscriptionResolverFields(instance),
+      }),
+      {},
+    );
+  }
+
   generateQueryResolverFields(): GraphQLFieldConfigMap<unknown, unknown> {
     return [...this.resolvers.instances].reduce<
       GraphQLFieldConfigMap<unknown, unknown>
@@ -82,6 +98,26 @@ export class SchemaBuilder {
       }),
       {},
     );
+  }
+
+  hasSubscriptionResolvers(classType: ClassType): boolean {
+    const resolver = gqlClassDecorator._fetch(classType);
+    return !!resolver?.subscriptions.size;
+  }
+
+  hasQueryResolvers(classType: ClassType): boolean {
+    const resolver = gqlClassDecorator._fetch(classType);
+    return !!resolver?.queries.size;
+  }
+
+  hasMutationResolvers(classType: ClassType): boolean {
+    const resolver = gqlClassDecorator._fetch(classType);
+    return !!resolver?.mutations.size;
+  }
+
+  hasFieldResolvers(classType: ClassType): boolean {
+    const resolver = gqlClassDecorator._fetch(classType);
+    return !!resolver?.resolveFields.size;
   }
 
   private buildRootMutationType(): GraphQLObjectType | undefined {
@@ -98,36 +134,18 @@ export class SchemaBuilder {
     });
   }
 
-  /*private buildRootSubscriptionType(
-    resolvers: Function[],
-  ): GraphQLObjectType | undefined {
-    const subscriptionsHandlers = this.filterHandlersByResolvers(
-      getMetadataStorage().subscriptions,
-      resolvers,
+  private buildRootSubscriptionType(): GraphQLObjectType | undefined {
+    const classTypes = [...this.resolvers.classTypes];
+
+    const someSubscriptions = classTypes.some(classType =>
+      this.hasSubscriptionResolvers(classType),
     );
-    if (subscriptionsHandlers.length === 0) {
-      return undefined;
-    }
+    if (!someSubscriptions) return;
 
     return new GraphQLObjectType({
       name: 'Subscription',
-      fields: this.generateSubscriptionsFields(subscriptionsHandlers),
+      fields: () => this.generateSubscriptionResolverFields(),
     });
-  }*/
-
-  hasQueryResolvers(classType: ClassType): boolean {
-    const resolver = gqlClassDecorator._fetch(classType);
-    return !!resolver?.queries.size;
-  }
-
-  hasMutationResolvers(classType: ClassType): boolean {
-    const resolver = gqlClassDecorator._fetch(classType);
-    return !!resolver?.mutations.size;
-  }
-
-  hasFieldResolvers(classType: ClassType): boolean {
-    const resolver = gqlClassDecorator._fetch(classType);
-    return !!resolver?.resolveFields.size;
   }
 
   private buildRootQueryType(): GraphQLObjectType | undefined {
@@ -168,13 +186,15 @@ export class SchemaBuilder {
   }
 
   build(): GraphQLSchema {
-    const mutation = this.buildRootMutationType();
     const query = this.buildRootQueryType();
+    const mutation = this.buildRootMutationType();
+    const subscription = this.buildRootSubscriptionType();
     const types = [...this.buildInputTypes(), ...this.buildOutputTypes()];
 
     return new GraphQLSchema({
       query,
       mutation,
+      subscription,
       types,
     });
   }

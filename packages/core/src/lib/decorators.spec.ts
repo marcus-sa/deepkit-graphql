@@ -18,6 +18,12 @@ import { buildSchema } from './schema-builder';
 import { Resolvers } from './resolvers';
 import { Context, GraphQLMiddleware, Parent } from './types';
 import { InjectorContext, InjectorModule } from '@deepkit/injector';
+import {
+  Broker,
+  BrokerBus,
+  BrokerBusChannel,
+  BrokerMemoryAdapter,
+} from '@deepkit/broker';
 
 /*test('invalid return type for mutation', () => {
   expect(() => {
@@ -210,6 +216,96 @@ test('mutation middleware is invoked', async () => {
 
   expect(testResolverSpy).toHaveBeenCalled();
 });
+
+test('subscription middleware is invoked', async () => {
+  class TestMiddleware implements GraphQLMiddleware {
+    execute(context: Context<unknown>, next: () => void): void {
+      next();
+    }
+  }
+
+  @graphql.resolver()
+  class TestResolver {
+    @graphql.subscription().middleware(TestMiddleware)
+    async *create(): AsyncIterable<boolean> {
+      yield true;
+    }
+  }
+
+  const injectorContext = new InjectorContext(
+    new InjectorModule([TestResolver, TestMiddleware]),
+  );
+
+  const testResolver = injectorContext.get(TestResolver);
+
+  const testResolverSpy = jest.spyOn(testResolver, 'create');
+
+  const testMiddleware = injectorContext.get(TestMiddleware);
+
+  const testMiddlewareExecuteSpy = jest.spyOn(testMiddleware, 'execute');
+
+  const resolvers = new Resolvers([testResolver]);
+
+  const schema = buildSchema(resolvers, injectorContext);
+
+  await executeGraphQL({
+    schema,
+    contextValue: {},
+    source: `subscription { create }`,
+  });
+
+  expect(testMiddlewareExecuteSpy).toHaveBeenCalled();
+
+  expect(testResolverSpy).toHaveBeenCalled();
+});
+
+test.todo(
+  'subscription return type AsyncIterable' /*, async () => {
+  @graphql.resolver()
+  class TestResolver {
+    async *subscribe(): AsyncGenerator<boolean> {
+      yield true;
+    }
+  }
+}*/,
+);
+
+test(
+  'subscription return type BrokerBus' /*, async () => {
+  const broker = new Broker(new BrokerMemoryAdapter());
+
+  type UserEvents = { type: 'user-created', id: number } | { type: 'user-deleted', id: number };
+  type UserEventChannel = BrokerBusChannel<UserEvents, 'user-events'>;
+
+  const channel = broker.busChannel<UserEventChannel>();
+
+  @graphql.resolver()
+  class UserResolver {
+    @graphql.subscription()
+    userEvents(): BrokerBus<UserEvents> {
+      return channel;
+    }
+  }
+
+  const userResolver = new UserResolver();
+
+  const userEventsSpy = jest.spyOn(userResolver, 'userEvents');
+
+  const resolvers = new Resolvers([userResolver]);
+
+  const schema = buildSchema(resolvers);
+
+  await executeGraphQL({
+    schema,
+    contextValue: {},
+    source: `subscription { userEvents }`,
+  });
+
+  await channel.publish({ type: 'user-created', id: 1 });
+
+  expect(userEventsSpy).toHaveBeenCalled();
+}*/,
+);
 
 test('mutation', async () => {
   interface User {

@@ -1,3 +1,4 @@
+import { AbstractClassType } from '@deepkit/core';
 import {
   metaAnnotation,
   ReflectionKind,
@@ -11,9 +12,12 @@ import {
 } from '@deepkit/type';
 
 import { TypeNameRequiredError, UnknownTypeNameError } from './errors';
-import { CONTEXT_META_NAME, Instance, PARENT_META_NAME } from './types';
+import { CONTEXT_META_NAME, PARENT_META_NAME } from './types';
 import { gqlClassDecorator, GraphQLClassMetadata } from './decorators';
-import { AbstractClassType, ClassType } from '@deepkit/core';
+
+export function isAsyncIterable(obj: unknown): obj is AsyncIterable<unknown> {
+  return obj != null && typeof obj === 'object' && Symbol.asyncIterator in obj;
+}
 
 export function getParentMetaAnnotationReflectionParameterIndex(
   parameters: readonly ReflectionParameter[],
@@ -76,7 +80,46 @@ export function excludeNullAndUndefinedTypes(
   ) as readonly Exclude<Type, TypeUndefined | TypeNull>[];
 }
 
-export function unwrapPromiseLikeType(type: Type): Type {
+export function maybeUnwrapSubscriptionReturnType(type: Type): Type {
+  switch (type.typeName) {
+    case 'Generator': {
+      const typeArgument = (type as TypeObjectLiteral).typeArguments?.[0];
+      if (!typeArgument) {
+        throw new Error('Missing type argument for Generator<T>');
+      }
+      return typeArgument;
+    }
+
+    case 'AsyncGenerator': {
+      const typeArgument = (type as TypeObjectLiteral).typeArguments?.[0];
+      if (!typeArgument) {
+        throw new Error('Missing type argument for AsyncGenerator<T>');
+      }
+      return typeArgument;
+    }
+
+    case 'AsyncIterable': {
+      const typeArgument = (type as TypeObjectLiteral).typeArguments?.[0];
+      if (!typeArgument) {
+        throw new Error('Missing type argument for AsyncIterable<T>');
+      }
+      return typeArgument;
+    }
+
+    case 'BrokerBus': {
+      const typeArgument = (type as TypeClass).typeArguments?.[0];
+      if (!typeArgument) {
+        throw new Error('Missing type argument for BrokerBus<T>');
+      }
+      return typeArgument;
+    }
+
+    default:
+      return type;
+  }
+}
+
+export function maybeUnwrapPromiseLikeType(type: Type): Type {
   return type.kind === ReflectionKind.promise ? type.type : type;
 }
 

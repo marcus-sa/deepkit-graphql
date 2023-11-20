@@ -1,14 +1,14 @@
 import { GraphQLSchema } from 'graphql';
-import {
-  WebWorkerFactory,
-  ApplicationServer,
-} from '@deepkit/framework';
+import { WebWorkerFactory, ApplicationServer } from '@deepkit/framework';
 import { httpWorkflow } from '@deepkit/http';
 import { Driver, GraphQLHttpContext } from '@deepkit-graphql/core';
 import { createYoga, YogaServerInstance } from 'graphql-yoga';
 import { Logger } from '@deepkit/logger';
 
-import { YogaGraphQLConfig, YogaGraphQLServerOptions } from './yoga-graphql-config';
+import {
+  YogaGraphQLConfig,
+  YogaGraphQLServerOptions,
+} from './yoga-graphql-config';
 
 export class YogaDriver extends Driver {
   private server?: YogaServerInstance<any, any> | null;
@@ -35,7 +35,8 @@ export class YogaDriver extends Driver {
 
   async start(schema: GraphQLSchema): Promise<void> {
     this.getOrCreateHttpServer();
-    const logging: any = (this.config as YogaGraphQLServerOptions).logging || this.logger;
+    const logging: any =
+      (this.config as YogaGraphQLServerOptions).logging || this.logger;
     if (logging && this.logger) {
       // @ts-ignore
       logging.warn = this.logger.warning;

@@ -33,6 +33,7 @@ export class GraphQLClassMetadata {
   readonly mutations = new Map<string, GraphQLPropertyMetadata>();
   readonly queries = new Map<string, GraphQLPropertyMetadata>();
   readonly resolveFields = new Map<string, GraphQLPropertyMetadata>();
+  readonly subscriptions = new Map<string, GraphQLPropertyMetadata>();
   readonly checks = new Set<(decorator: GraphQLClassDecorator) => void>();
 }
 
@@ -70,16 +71,20 @@ export class GraphQLClassDecorator {
     this.t.checks.forEach(check => check(this));
   }
 
-  addMutation(property: string, mutation: GraphQLPropertyMetadata) {
-    this.t.mutations.set(property, mutation);
+  addMutation(property: string, metadata: GraphQLPropertyMetadata) {
+    this.t.mutations.set(property, metadata);
   }
 
-  addQuery(property: string, query: GraphQLPropertyMetadata) {
-    this.t.queries.set(property, query);
+  addQuery(property: string, metadata: GraphQLPropertyMetadata) {
+    this.t.queries.set(property, metadata);
   }
 
-  addResolveField(property: string, field: GraphQLPropertyMetadata) {
-    this.t.resolveFields.set(property, field);
+  addSubscription(property: string, metadata: GraphQLPropertyMetadata) {
+    this.t.subscriptions.set(property, metadata);
+  }
+
+  addResolveField(property: string, metadata: GraphQLPropertyMetadata) {
+    this.t.resolveFields.set(property, metadata);
   }
 
   addCheck(check: (decorator: GraphQLClassDecorator) => void) {
@@ -93,6 +98,12 @@ export class GraphQLClassDecorator {
 }
 
 interface GraphQLQueryOptions {
+  name?: string;
+  description?: string;
+  deprecationReason?: string;
+}
+
+interface GraphQLSubscriptionOptions {
   name?: string;
   description?: string;
   deprecationReason?: string;
@@ -145,7 +156,8 @@ class GraphQLPropertyDecorator {
           break;
 
         case 'subscription':
-          throw new Error('Not yet implemented');
+          gqlClassDecorator.addSubscription(property, this.t)(classType);
+          break;
 
         default:
           throw new Error('Invalid type');
@@ -171,6 +183,15 @@ class GraphQLPropertyDecorator {
       this.t.name = options.name;
     }
     this.t.type = 'mutation';
+    this.t.description = options?.description;
+    this.t.deprecationReason = options?.deprecationReason;
+  }
+
+  subscription(options?: GraphQLSubscriptionOptions) {
+    if (options?.name) {
+      this.t.name = options.name;
+    }
+    this.t.type = 'subscription';
     this.t.description = options?.description;
     this.t.deprecationReason = options?.deprecationReason;
   }
@@ -202,13 +223,6 @@ class GraphQLPropertyDecorator {
       }
     });
   }
-
-  // TODO: subscriptions
-  // subscription(options?: GraphQLSubscriptionOptions) {
-  //   this.t.type = 'subscription';
-  //   this.t.description = options?.description;
-  //   this.t.deprecationReason = options?.deprecationReason;
-  // }
 
   // eslint-disable-next-line functional/prefer-readonly-type
   middleware(...middleware: InternalMiddleware[]) {
@@ -258,7 +272,12 @@ type MergedGraphQL<T extends any[]> = GraphQLMerge<
 
 export type MergedGraphQLDecorator = Omit<
   MergedGraphQL<[typeof gqlClassDecorator, typeof gqlPropertyDecorator]>,
-  'addMutation' | 'addQuery' | 'addResolveField' | 'onDecorator' | 'addCheck'
+  | 'addMutation'
+  | 'addQuery'
+  | 'addResolveField'
+  | 'addSubscription'
+  | 'onDecorator'
+  | 'addCheck'
 >;
 
 export const graphql: MergedGraphQLDecorator = mergeDecorator(

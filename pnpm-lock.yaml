@@ -18,7 +18,7 @@ dependencies:
     version: 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(@deepkit/workflow@1.0.1-alpha.105)
   '@deepkit/broker':
     specifier: 1.0.1-alpha.105
-    version: 1.0.1-alpha.105(@deepkit/app@1.0.1-alpha.105)(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7)
+    version: 1.0.1-alpha.105(@deepkit/app@1.0.1-alpha.105)(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1)
   '@deepkit/bson':
     specifier: 1.0.1-alpha.105
     version: 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
@@ -27,7 +27,7 @@ dependencies:
     version: 1.0.1-alpha.105
   '@deepkit/core-rxjs':
     specifier: 1.0.1-alpha.105
-    version: 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(rxjs@7.5.7)
+    version: 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(rxjs@7.8.1)
   '@deepkit/event':
     specifier: 1.0.1-alpha.105
     version: 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
@@ -36,7 +36,7 @@ dependencies:
     version: 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)
   '@deepkit/framework':
     specifier: 1.0.1-alpha.106
-    version: 1.0.1-alpha.106(@deepkit/app@1.0.1-alpha.105)(@deepkit/broker@1.0.1-alpha.105)(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/http@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/orm@1.0.1-alpha.105)(@deepkit/rpc-tcp@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/sql@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/template@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(@deepkit/workflow@1.0.1-alpha.105)(@oclif/config@1.18.17)(rxjs@7.5.7)
+    version: 1.0.1-alpha.106(@deepkit/app@1.0.1-alpha.105)(@deepkit/broker@1.0.1-alpha.105)(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/http@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/orm@1.0.1-alpha.105)(@deepkit/rpc-tcp@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/sql@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/template@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(@deepkit/workflow@1.0.1-alpha.105)(@oclif/config@1.18.17)(rxjs@7.8.1)
   '@deepkit/http':
     specifier: 1.0.1-alpha.105
     version: 1.0.1-alpha.105(@deepkit/app@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/template@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(@deepkit/workflow@1.0.1-alpha.105)
@@ -51,7 +51,7 @@ dependencies:
     version: 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
   '@deepkit/rpc':
     specifier: ~1.0.1-alpha.105
-    version: 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7)
+    version: 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1)
   '@deepkit/rpc-tcp':
     specifier: 1.0.1-alpha.105
     version: 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)
@@ -73,6 +73,9 @@ dependencies:
   '@deepkit/workflow':
     specifier: 1.0.1-alpha.105
     version: 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
+  '@graphql-tools/utils':
+    specifier: ^10.0.8
+    version: 10.0.8(graphql@16.8.0)
   graphql:
     specifier: ^16.8.0
     version: 16.8.0
@@ -88,6 +91,9 @@ dependencies:
   radash:
     specifier: ^11.0.0
     version: 11.0.0
+  rxjs:
+    specifier: ^7.8.1
+    version: 7.8.1
   tslib:
     specifier: 2.6.2
     version: 2.6.2
@@ -1893,7 +1899,7 @@ packages:
       '@deepkit/core': 1.0.1-alpha.105
       '@deepkit/injector': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
       '@deepkit/logger': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)
-      '@deepkit/rpc': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7)
+      '@deepkit/rpc': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1)
       '@deepkit/type': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)
     dev: false
 
@@ -1901,7 +1907,7 @@ packages:
     resolution: {integrity: sha512-kioauGkkU8x04+zea0O2UWbSBurtXdqeaUuCw5dKsPZqgF9xoMdzfatJ2bWVA4K+op6JZEnxTd+h9tDuwrGlBQ==}
     dev: false
 
-  /@deepkit/api-console-module@1.0.1-alpha.106(@deepkit/app@1.0.1-alpha.105)(@deepkit/broker@1.0.1-alpha.105)(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/http@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7):
+  /@deepkit/api-console-module@1.0.1-alpha.106(@deepkit/app@1.0.1-alpha.105)(@deepkit/broker@1.0.1-alpha.105)(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/http@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1):
     resolution: {integrity: sha512-k41m+0eDE1ufoGk9tg0aR1MEOWcs9ZlcmfRMmzJfxVoHetkeUw41IZsIYWbWZ2TGtlobgvb0QGjmhOLokek3og==}
     peerDependencies:
       '@deepkit/app': ^1.0.1-alpha.43
@@ -1918,15 +1924,15 @@ packages:
       '@deepkit/api-console-api': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
       '@deepkit/api-console-gui': 1.0.1-alpha.106
       '@deepkit/app': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(@deepkit/workflow@1.0.1-alpha.105)
-      '@deepkit/broker': 1.0.1-alpha.105(@deepkit/app@1.0.1-alpha.105)(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7)
+      '@deepkit/broker': 1.0.1-alpha.105(@deepkit/app@1.0.1-alpha.105)(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1)
       '@deepkit/bson': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
       '@deepkit/core': 1.0.1-alpha.105
       '@deepkit/http': 1.0.1-alpha.105(@deepkit/app@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/template@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(@deepkit/workflow@1.0.1-alpha.105)
       '@deepkit/injector': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
       '@deepkit/logger': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)
-      '@deepkit/rpc': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7)
+      '@deepkit/rpc': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1)
       '@deepkit/type': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)
-      rxjs: 7.5.7
+      rxjs: 7.8.1
     dev: false
 
   /@deepkit/app@1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(@deepkit/workflow@1.0.1-alpha.105):
@@ -1953,7 +1959,7 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@deepkit/broker@1.0.1-alpha.105(@deepkit/app@1.0.1-alpha.105)(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7):
+  /@deepkit/broker@1.0.1-alpha.105(@deepkit/app@1.0.1-alpha.105)(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1):
     resolution: {integrity: sha512-EOC2wfXnsm6fZBekGId6o+QqT3G2UkYYnpV/IU5FuB2MnB3kSMVkl7uHWwl5p6Pm4VuQYsGSyJ4v9NI4d6OJKA==}
     peerDependencies:
       '@deepkit/app': ^1.0.1-alpha.40
@@ -1968,11 +1974,11 @@ packages:
       '@deepkit/app': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(@deepkit/workflow@1.0.1-alpha.105)
       '@deepkit/bson': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
       '@deepkit/core': 1.0.1-alpha.105
-      '@deepkit/core-rxjs': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(rxjs@7.5.7)
+      '@deepkit/core-rxjs': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(rxjs@7.8.1)
       '@deepkit/event': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
-      '@deepkit/rpc': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7)
+      '@deepkit/rpc': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1)
       '@deepkit/type': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)
-      rxjs: 7.5.7
+      rxjs: 7.8.1
     dev: false
 
   /@deepkit/bson@1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105):
@@ -1985,14 +1991,14 @@ packages:
       '@deepkit/type': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)
     dev: false
 
-  /@deepkit/core-rxjs@1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(rxjs@7.5.7):
+  /@deepkit/core-rxjs@1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(rxjs@7.8.1):
     resolution: {integrity: sha512-ppi2bolcVb+WXvHTCdInHI87WOy+0M7fTbulisyZ5jv0498TiTbUFamnFHCxDpaDGif+TQ9zFK+dGsyz/6uOJg==}
     peerDependencies:
       '@deepkit/core': ^1.0.1-alpha.0
       rxjs: '*'
     dependencies:
       '@deepkit/core': 1.0.1-alpha.105
-      rxjs: 7.5.7
+      rxjs: 7.8.1
     dev: false
 
   /@deepkit/core@1.0.1-alpha.105:
@@ -2020,7 +2026,7 @@ packages:
       '@deepkit/core': 1.0.1-alpha.105
     dev: false
 
-  /@deepkit/framework-debug-api@1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7):
+  /@deepkit/framework-debug-api@1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1):
     resolution: {integrity: sha512-JiZjs+OEmCe00363mF1nrvDuYLNsvkjVVEC+57vY69Z0d2jG9WS2cnDd9+APqAqLjZSbXnGokAuC8qaq9OIPnQ==}
     peerDependencies:
       '@deepkit/bson': ^1.0.1-alpha.13
@@ -2035,20 +2041,20 @@ packages:
     dependencies:
       '@deepkit/bson': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
       '@deepkit/core': 1.0.1-alpha.105
-      '@deepkit/core-rxjs': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(rxjs@7.5.7)
+      '@deepkit/core-rxjs': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(rxjs@7.8.1)
       '@deepkit/injector': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
       '@deepkit/logger': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)
-      '@deepkit/rpc': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7)
+      '@deepkit/rpc': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1)
       '@deepkit/stopwatch': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
       '@deepkit/type': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)
-      rxjs: 7.5.7
+      rxjs: 7.8.1
     dev: false
 
   /@deepkit/framework-debug-gui@1.0.1-alpha.106:
     resolution: {integrity: sha512-D/q6qdL3Kl7r4mYk6CZtxlu3gT8Cd7ikhsQuS9GqKGHC3qnZZBNucSKg9Q7Cftud1BRUn4SmtLhxrDqzerDvxQ==}
     dev: false
 
-  /@deepkit/framework@1.0.1-alpha.106(@deepkit/app@1.0.1-alpha.105)(@deepkit/broker@1.0.1-alpha.105)(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/http@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/orm@1.0.1-alpha.105)(@deepkit/rpc-tcp@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/sql@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/template@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(@deepkit/workflow@1.0.1-alpha.105)(@oclif/config@1.18.17)(rxjs@7.5.7):
+  /@deepkit/framework@1.0.1-alpha.106(@deepkit/app@1.0.1-alpha.105)(@deepkit/broker@1.0.1-alpha.105)(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/http@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/orm@1.0.1-alpha.105)(@deepkit/rpc-tcp@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/sql@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/template@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(@deepkit/workflow@1.0.1-alpha.105)(@oclif/config@1.18.17)(rxjs@7.8.1):
     resolution: {integrity: sha512-AKberI++GGYEnsDiDyWyGMMv8jLBu4wsArY27rv2wYMNnLfeR4zz1s5B6OXzgcDlgrGVO1H/I0KOROQzJ97PQA==}
     peerDependencies:
       '@deepkit/app': ^1.0.1-alpha.13
@@ -2069,14 +2075,14 @@ packages:
       '@deepkit/type': ^1.0.1-alpha.13
       '@deepkit/workflow': ^1.0.1-alpha.13
     dependencies:
-      '@deepkit/api-console-module': 1.0.1-alpha.106(@deepkit/app@1.0.1-alpha.105)(@deepkit/broker@1.0.1-alpha.105)(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/http@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7)
+      '@deepkit/api-console-module': 1.0.1-alpha.106(@deepkit/app@1.0.1-alpha.105)(@deepkit/broker@1.0.1-alpha.105)(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/http@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1)
       '@deepkit/app': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(@deepkit/workflow@1.0.1-alpha.105)
-      '@deepkit/broker': 1.0.1-alpha.105(@deepkit/app@1.0.1-alpha.105)(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7)
+      '@deepkit/broker': 1.0.1-alpha.105(@deepkit/app@1.0.1-alpha.105)(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1)
       '@deepkit/bson': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
       '@deepkit/core': 1.0.1-alpha.105
-      '@deepkit/core-rxjs': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(rxjs@7.5.7)
+      '@deepkit/core-rxjs': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(rxjs@7.8.1)
       '@deepkit/event': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
-      '@deepkit/framework-debug-api': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7)
+      '@deepkit/framework-debug-api': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1)
       '@deepkit/framework-debug-gui': 1.0.1-alpha.106
       '@deepkit/http': 1.0.1-alpha.105(@deepkit/app@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/template@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(@deepkit/workflow@1.0.1-alpha.105)
       '@deepkit/injector': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
@@ -2084,7 +2090,7 @@ packages:
       '@deepkit/orm': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/event@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
       '@deepkit/orm-browser-api': 1.0.1-alpha.105(@deepkit/rpc@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
       '@deepkit/orm-browser-gui': 1.0.1-alpha.106
-      '@deepkit/rpc': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7)
+      '@deepkit/rpc': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1)
       '@deepkit/rpc-tcp': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/rpc@1.0.1-alpha.105)
       '@deepkit/sql': 1.0.1-alpha.105(@deepkit/app@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/orm@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
       '@deepkit/stopwatch': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
@@ -2177,7 +2183,7 @@ packages:
       '@deepkit/stopwatch': ^1.0.1-alpha.13
       '@deepkit/type': ^1.0.1-alpha.13
     dependencies:
-      '@deepkit/rpc': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7)
+      '@deepkit/rpc': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1)
       '@deepkit/stopwatch': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
       '@deepkit/type': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)
     dev: false
@@ -2232,7 +2238,7 @@ packages:
       '@deepkit/rpc': ^1.0.1-alpha.13
     dependencies:
       '@deepkit/core': 1.0.1-alpha.105
-      '@deepkit/rpc': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7)
+      '@deepkit/rpc': 1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1)
       '@types/ws': 8.5.5
       ws: 8.13.0
     transitivePeerDependencies:
@@ -2240,7 +2246,7 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@deepkit/rpc@1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.5.7):
+  /@deepkit/rpc@1.0.1-alpha.105(@deepkit/bson@1.0.1-alpha.105)(@deepkit/core-rxjs@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)(rxjs@7.8.1):
     resolution: {integrity: sha512-SzFxlMbZdnISiuXK8vEuOIiPnTWDXaxkbM2tT84M+ZWJlPRpkz/TuQXNITV7aXqpKvIkFDMPMMvcPEdKjvkUZA==}
     peerDependencies:
       '@deepkit/bson': ^1.0.1-alpha.13
@@ -2253,12 +2259,12 @@ packages:
     dependencies:
       '@deepkit/bson': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
       '@deepkit/core': 1.0.1-alpha.105
-      '@deepkit/core-rxjs': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(rxjs@7.5.7)
+      '@deepkit/core-rxjs': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(rxjs@7.8.1)
       '@deepkit/injector': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105)
       '@deepkit/logger': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)
       '@deepkit/type': 1.0.1-alpha.105(@deepkit/core@1.0.1-alpha.105)
       dot-prop: 5.3.0
-      rxjs: 7.5.7
+      rxjs: 7.8.1
     dev: false
 
   /@deepkit/sql@1.0.1-alpha.105(@deepkit/app@1.0.1-alpha.105)(@deepkit/core@1.0.1-alpha.105)(@deepkit/injector@1.0.1-alpha.105)(@deepkit/logger@1.0.1-alpha.105)(@deepkit/orm@1.0.1-alpha.105)(@deepkit/stopwatch@1.0.1-alpha.105)(@deepkit/type@1.0.1-alpha.105):
@@ -13989,17 +13995,10 @@ packages:
     dependencies:
       queue-microtask: 1.2.3
 
-  /rxjs@7.5.7:
-    resolution: {integrity: sha512-z9MzKh/UcOqB3i20H6rtrlaE/CgjLOvheWK/9ILrbhROGTweAi1BaFsTT9FbwZi5Trr1qNRs+MXkhmR06awzQA==}
-    dependencies:
-      tslib: 2.6.2
-    dev: false
-
   /rxjs@7.8.1:
     resolution: {integrity: sha512-AA3TVj+0A2iuIoQkWEK/tqFjBq2j+6PO6Y0zJcvzLAFhEFIO3HL0vls9hWLncZbAAbK0mar7oZ4V079I/qPMxg==}
     dependencies:
       tslib: 2.6.2
-    dev: true
 
   /safe-array-concat@1.0.1:
     resolution: {integrity: sha512-6XbUAseYE2KtOuGueyeobCySj9L4+66Tn6KQMOPQJrAJEowYKW/YR/MGJZl7FdydUdaFu4LYyDZjxf4/Nmo23Q==}

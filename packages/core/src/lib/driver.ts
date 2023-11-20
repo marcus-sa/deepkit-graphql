@@ -1,5 +1,9 @@
 import { GraphQLSchema } from 'graphql';
-import { ApplicationServer, WebWorker, WebWorkerFactory } from '@deepkit/framework';
+import {
+  ApplicationServer,
+  WebWorker,
+  WebWorkerFactory,
+} from '@deepkit/framework';
 import * as https from 'node:https';
 import * as http from 'node:http';
 
@@ -29,6 +33,6 @@ export abstract class Driver {
       (this.appServer as any).httpWorker.start();
       httpWorker = this.appServer.getHttpWorker() as any;
     }
-    return  httpWorker.servers || httpWorker.server;
+    return httpWorker.servers || httpWorker.server;
   }
 }

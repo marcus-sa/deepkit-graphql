@@ -77,21 +77,20 @@ describe('TypesBuilder', () => {
       readonly type: 'cat';
     }
 
-    type AnimalU = Dog | Cat;
+    type Animals = readonly (Dog | Cat)[];
 
-    const list = builder.createOutputType<
-      readonly AnimalU[]
-    >() as GraphQLList<GraphQLObjectType>;
+    const list =
+      builder.createOutputType<Animals>() as GraphQLList<GraphQLObjectType>;
 
     expect(list).toBeInstanceOf(GraphQLList);
-    expect(list.ofType.name).toEqual('AnimalU');
+    expect(list.ofType.name).toEqual('Animals');
     expect(list.ofType.toConfig()).toMatchInlineSnapshot(`
           {
             "astNode": undefined,
             "description": undefined,
             "extensionASTNodes": [],
             "extensions": {},
-            "name": "AnimalU",
+            "name": "Animals",
             "resolveType": undefined,
             "types": [
               "Dog",
@@ -298,7 +297,7 @@ describe('TypesBuilder', () => {
       `);
   });
 
-  test('../../deepkit/deepkit-framework/dist', () => {
+  test('union', () => {
     interface Animal {
       readonly type: string;
     }
@@ -508,7 +507,8 @@ describe('TypesBuilder', () => {
   }*/,
   );
 
-  test.todo('extends'/*, () => {
+  test.todo(
+    'extends' /*, () => {
     interface Produce {
       readonly type: string;
       readonly test: string;
@@ -521,5 +521,6 @@ describe('TypesBuilder', () => {
     interface Vegetable extends Produce {
       readonly type: 'vegetable';
     }
-  }*/);
+  }*/,
+  );
 });

@@ -14,9 +14,12 @@
   },
   "peerDependencies": {
     "graphql": "^16.8.0",
+    "@graphql-tools/utils": "^10.0.8",
     "@deepkit/core": "^1.0.1-alpha.105",
     "@deepkit/http": "^1.0.1-alpha.105",
     "@deepkit/type": "^1.0.1-alpha.105",
+    "@deepkit/broker": "^1.0.1-alpha.105",
+    "rxjs": "^7.8.1",
     "@deepkit/injector": "^1.0.1-alpha.105"
   },
   "publishConfig": {

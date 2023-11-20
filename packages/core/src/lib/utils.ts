@@ -21,7 +21,10 @@ export function isAsyncIterable(obj: unknown): obj is AsyncIterable<unknown> {
   return obj != null && typeof obj === 'object' && Symbol.asyncIterator in obj;
 }
 
-export function transformAsyncIteratorResult<In, Out>(asyncIterable: AsyncIterable<In>, callback: (value: In) => Out): AsyncIterable<Out> {
+export function transformAsyncIteratorResult<In, Out>(
+  asyncIterable: AsyncIterable<In>,
+  callback: (value: In) => Out,
+): AsyncIterable<Out> {
   return {
     [Symbol.asyncIterator](): AsyncIterator<Out> {
       const asyncIterator = asyncIterable[Symbol.asyncIterator]();
@@ -34,10 +37,10 @@ export function transformAsyncIteratorResult<In, Out>(asyncIterable: AsyncIterab
             value: callback(value),
             done,
           };
-        }
+        },
       };
-    }
-  }
+    },
+  };
 }
 
 export function getParentMetaAnnotationReflectionParameterIndex(
@@ -150,7 +153,7 @@ export function maybeUnwrapSubscriptionReturnType(type: Type): Type {
           throw new Error('Missing type argument for BrokerBus<T>');
         }
         return typeArgument;
-     }
+      }
       // TODO: remove when next version of deepkit is released
       if ((type as TypeClass).classType === Observable) {
         const typeArgument = type.typeArguments?.[0];

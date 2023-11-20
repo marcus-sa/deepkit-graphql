@@ -58,6 +58,7 @@ import {
 } from '@deepkit/broker';
 import { isAsyncIterable } from './utils';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { InvalidSubscriptionTypeError } from './errors';
 
 describe('TypesBuilder', () => {
   let builder: TypesBuilder;
@@ -246,9 +247,7 @@ describe('TypesBuilder', () => {
             [],
             'subscription',
           ),
-        ).toThrowErrorMatchingInlineSnapshot(
-          `"The return type of "subscribe" method on "Resolver" class must be AsyncGenerator<T>, AsyncIterable<T>, Observable<T> or BrokerBus<T>"`,
-        );
+        ).toThrowError(InvalidSubscriptionTypeError);
       });
     });
   });

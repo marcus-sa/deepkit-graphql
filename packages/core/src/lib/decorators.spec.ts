@@ -227,7 +227,7 @@ test('subscription middleware is invoked', async () => {
   @graphql.resolver()
   class TestResolver {
     @graphql.subscription().middleware(TestMiddleware)
-    async *create(): AsyncIterable<boolean> {
+    async *create(): AsyncGenerator<boolean> {
       yield true;
     }
   }
@@ -258,54 +258,6 @@ test('subscription middleware is invoked', async () => {
 
   expect(testResolverSpy).toHaveBeenCalled();
 });
-
-test.todo(
-  'subscription return type AsyncIterable' /*, async () => {
-  @graphql.resolver()
-  class TestResolver {
-    async *subscribe(): AsyncGenerator<boolean> {
-      yield true;
-    }
-  }
-}*/,
-);
-
-test(
-  'subscription return type BrokerBus' /*, async () => {
-  const broker = new Broker(new BrokerMemoryAdapter());
-
-  type UserEvents = { type: 'user-created', id: number } | { type: 'user-deleted', id: number };
-  type UserEventChannel = BrokerBusChannel<UserEvents, 'user-events'>;
-
-  const channel = broker.busChannel<UserEventChannel>();
-
-  @graphql.resolver()
-  class UserResolver {
-    @graphql.subscription()
-    userEvents(): BrokerBus<UserEvents> {
-      return channel;
-    }
-  }
-
-  const userResolver = new UserResolver();
-
-  const userEventsSpy = jest.spyOn(userResolver, 'userEvents');
-
-  const resolvers = new Resolvers([userResolver]);
-
-  const schema = buildSchema(resolvers);
-
-  await executeGraphQL({
-    schema,
-    contextValue: {},
-    source: `subscription { userEvents }`,
-  });
-
-  await channel.publish({ type: 'user-created', id: 1 });
-
-  expect(userEventsSpy).toHaveBeenCalled();
-}*/,
-);
 
 test('mutation', async () => {
   interface User {

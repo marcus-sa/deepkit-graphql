@@ -47,7 +47,7 @@ import {
 import { Context, GraphQLFields, Instance, InternalMiddleware } from './types';
 import { typeResolvers } from './decorators';
 import { Resolvers } from './resolvers';
-import { TypeNameRequiredError } from './errors';
+import { InvalidSubscriptionTypeError, TypeNameRequiredError } from './errors';
 import {
   BigInt,
   Void,
@@ -78,7 +78,8 @@ import {
   maybeUnwrapPromiseLikeType,
   getClassDecoratorMetadata,
   isAsyncIterable,
-  maybeUnwrapSubscriptionReturnType, transformAsyncIteratorResult,
+  maybeUnwrapSubscriptionReturnType,
+  transformAsyncIteratorResult,
 } from './utils';
 
 export class TypesBuilder {
@@ -592,8 +593,10 @@ export class TypesBuilder {
       ) {
         return maybeUnwrapSubscriptionReturnType(returnType);
       } else {
-        throw new Error(
-          `The return type of "${reflectionMethod.name}" method on "${resolver.constructor.name}" class must be AsyncGenerator<T>, AsyncIterable<T>, Observable<T> or BrokerBus<T>`,
+        throw new InvalidSubscriptionTypeError(
+          returnType,
+          reflectionMethod.name,
+          resolver.constructor.name,
         );
       }
     }
@@ -695,16 +698,22 @@ export class TypesBuilder {
         }
 
         if (result instanceof Observable) {
-          return observableToAsyncIterable(result.pipe(map(value => serializeResult(value))));
-        }
-
-        if (!isAsyncIterable(result)) {
-          throw new Error(
-            `The return type of "${reflectionMethod.name}" method on "${resolver.constructor.name}" class must be AsyncGenerator<T>, AsyncIterable<T>, Observable<T> or BrokerBus<T>`,
+          return observableToAsyncIterable(
+            result.pipe(map(value => serializeResult(value))),
           );
         }
 
-        return transformAsyncIteratorResult(result, value => serializeResult(value));
+        if (!isAsyncIterable(result)) {
+          throw new InvalidSubscriptionTypeError(
+            reflect(result),
+            reflectionMethod.name,
+            resolver.constructor.name,
+          );
+        }
+
+        return transformAsyncIteratorResult(result, value =>
+          serializeResult(value),
+        );
       }
 
       return serializeResult(result);

@@ -1,5 +1,7 @@
 
 
+## [0.1.2](https://github.com/marcus-sa/deepkit-graphql/compare/apollo-v0.1.1...apollo-v0.1.2) (2023-11-20)
+
 ## [0.1.1](https://github.com/marcus-sa/deepkit-graphql/compare/apollo-v0.0.7...apollo-v0.1.1) (2023-11-16)
 
 ## [0.0.7](https://github.com/marcus-sa/deepkit-graphql/compare/apollo-v0.0.6...apollo-v0.0.7) (2023-11-16)

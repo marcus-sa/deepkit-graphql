@@ -574,6 +574,7 @@ export class TypesBuilder {
     }
   }
 
+  // TODO: move return type resolution and validation into decorators
   private getSerializableResolveFunctionReturnType<T>(
     resolver: Instance<T>,
     reflectionMethod: ReflectionMethod,

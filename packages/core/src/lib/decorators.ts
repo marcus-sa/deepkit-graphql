@@ -22,7 +22,7 @@ import {
 } from '@deepkit/type';
 
 import { requireTypeName } from './utils';
-import { Instance, InternalMiddleware } from './types';
+import { InternalMiddleware } from './types';
 
 export const typeResolvers = new Map<string, ClassType>();
 
@@ -127,6 +127,8 @@ export class GraphQLPropertyMetadata implements GraphQLQueryOptions {
   classType: ClassType;
   middleware: Set<InternalMiddleware> = new Set<InternalMiddleware>();
   type: 'query' | 'mutation' | 'subscription' | 'resolveField';
+  // TODO
+  // returnType: Type;
   description?: string;
   deprecationReason?: string;
   readonly checks = new Set<(decorator: GraphQLClassDecorator) => void>();

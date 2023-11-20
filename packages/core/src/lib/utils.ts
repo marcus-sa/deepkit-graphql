@@ -1,4 +1,5 @@
 import { AbstractClassType } from '@deepkit/core';
+import { BrokerBus } from '@deepkit/broker';
 import {
   metaAnnotation,
   ReflectionKind,
@@ -11,12 +12,32 @@ import {
   TypeUndefined,
 } from '@deepkit/type';
 
-import { TypeNameRequiredError, UnknownTypeNameError } from './errors';
+import { UnknownTypeNameError } from './errors';
 import { CONTEXT_META_NAME, PARENT_META_NAME } from './types';
 import { gqlClassDecorator, GraphQLClassMetadata } from './decorators';
+import { Observable } from 'rxjs';
 
 export function isAsyncIterable(obj: unknown): obj is AsyncIterable<unknown> {
   return obj != null && typeof obj === 'object' && Symbol.asyncIterator in obj;
+}
+
+export function transformAsyncIteratorResult<In, Out>(asyncIterable: AsyncIterable<In>, callback: (value: In) => Out): AsyncIterable<Out> {
+  return {
+    [Symbol.asyncIterator](): AsyncIterator<Out> {
+      const asyncIterator = asyncIterable[Symbol.asyncIterator]();
+
+      return {
+        async next(): Promise<IteratorResult<Out>> {
+          const { done, value } = await asyncIterator.next();
+
+          return {
+            value: callback(value),
+            done,
+          };
+        }
+      };
+    }
+  }
 }
 
 export function getParentMetaAnnotationReflectionParameterIndex(
@@ -61,9 +82,6 @@ export function filterReflectionParametersMetaAnnotationsForArguments(
 
 export function requireTypeName(type: TypeObjectLiteral | TypeClass): string {
   const name = getTypeName(type);
-  if (!name) {
-    throw new TypeNameRequiredError(type);
-  }
   if (name.startsWith('UnknownTypeName:()=>')) {
     throw new UnknownTypeNameError(type);
   }
@@ -83,7 +101,7 @@ export function excludeNullAndUndefinedTypes(
 export function maybeUnwrapSubscriptionReturnType(type: Type): Type {
   switch (type.typeName) {
     case 'Generator': {
-      const typeArgument = (type as TypeObjectLiteral).typeArguments?.[0];
+      const typeArgument = type.typeArguments?.[0];
       if (!typeArgument) {
         throw new Error('Missing type argument for Generator<T>');
       }
@@ -91,7 +109,7 @@ export function maybeUnwrapSubscriptionReturnType(type: Type): Type {
     }
 
     case 'AsyncGenerator': {
-      const typeArgument = (type as TypeObjectLiteral).typeArguments?.[0];
+      const typeArgument = type.typeArguments?.[0];
       if (!typeArgument) {
         throw new Error('Missing type argument for AsyncGenerator<T>');
       }
@@ -99,22 +117,49 @@ export function maybeUnwrapSubscriptionReturnType(type: Type): Type {
     }
 
     case 'AsyncIterable': {
-      const typeArgument = (type as TypeObjectLiteral).typeArguments?.[0];
+      const typeArgument = type.typeArguments?.[0];
       if (!typeArgument) {
         throw new Error('Missing type argument for AsyncIterable<T>');
       }
       return typeArgument;
     }
 
-    case 'BrokerBus': {
-      const typeArgument = (type as TypeClass).typeArguments?.[0];
-      if (!typeArgument) {
-        throw new Error('Missing type argument for BrokerBus<T>');
-      }
-      return typeArgument;
-    }
+    // TODO: will be available next version of deepkit
+    // case BrokerBus.name: {
+    //   const typeArgument = (type as TypeClass).typeArguments?.[0];
+    //   if (!typeArgument) {
+    //     throw new Error('Missing type argument for BrokerBus<T>');
+    //   }
+    //   return typeArgument;
+    // }
+
+    // TODO: will be available next version of deepkit
+    // case Observable.name: {
+    //   const typeArgument = (type as TypeClass).typeArguments?.[0];
+    //   if (!typeArgument) {
+    //     throw new Error('Missing type argument for Observable<T>');
+    //   }
+    //   return typeArgument;
+    // }
 
     default:
+      // TODO: remove when next version of deepkit is released
+      if ((type as TypeClass).classType === BrokerBus) {
+        const typeArgument = type.typeArguments?.[0];
+        if (!typeArgument) {
+          throw new Error('Missing type argument for BrokerBus<T>');
+        }
+        return typeArgument;
+     }
+      // TODO: remove when next version of deepkit is released
+      if ((type as TypeClass).classType === Observable) {
+        const typeArgument = type.typeArguments?.[0];
+        if (!typeArgument) {
+          throw new Error('Missing type argument for Observable<T>');
+        }
+        return typeArgument;
+      }
+
       return type;
   }
 }

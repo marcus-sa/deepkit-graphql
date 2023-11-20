@@ -1,5 +1,8 @@
 import { asyncOperation, isClass } from '@deepkit/core';
 import { InjectorContext } from '@deepkit/injector';
+import { BrokerBus } from '@deepkit/broker';
+import { map, Observable } from 'rxjs';
+import { observableToAsyncIterable } from '@graphql-tools/utils';
 import {
   ReceiveType,
   ReflectionClass,
@@ -75,11 +78,8 @@ import {
   maybeUnwrapPromiseLikeType,
   getClassDecoratorMetadata,
   isAsyncIterable,
-  maybeUnwrapSubscriptionReturnType,
+  maybeUnwrapSubscriptionReturnType, transformAsyncIteratorResult,
 } from './utils';
-import { BrokerBus } from '@deepkit/broker';
-import { Observable } from 'rxjs';
-import { observableToAsyncIterable } from '@graphql-tools/utils';
 
 export class TypesBuilder {
   private readonly outputObjectTypes = new Map<string, GraphQLObjectType>();
@@ -426,8 +426,7 @@ export class TypesBuilder {
         }
 
         let config: GraphQLFieldConfig<unknown, unknown> = {
-          // TODO
-          // description: '',
+          description: property.property.description,
           // TODO
           // deprecationReason: '',
           type,
@@ -584,13 +583,17 @@ export class TypesBuilder {
       if (
         returnType.typeName === 'AsyncGenerator' ||
         returnType.typeName === 'AsyncIterable' ||
-        returnType.typeName === 'Generator' ||
-        returnType.typeName === 'BrokerBus'
+        // TODO: this will be available in next version of deepkit
+        // returnType.typeName === 'BrokerBus' ||
+        // returnType.typeName === 'Observable'
+        // TODO: remove when next version of deepkit is released
+        (returnType as TypeClass).classType === Observable ||
+        (returnType as TypeClass).classType === BrokerBus
       ) {
         return maybeUnwrapSubscriptionReturnType(returnType);
       } else {
         throw new Error(
-          `Return type of ${reflectionMethod.name} subscription method on ${resolver.constructor.name} class resolver must be an AsyncGenerator<T>, AsyncIterable<T>, Generator<T> or BrokerBus<T>`,
+          `The return type of "${reflectionMethod.name}" method on "${resolver.constructor.name}" class must be AsyncGenerator<T>, AsyncIterable<T>, Observable<T> or BrokerBus<T>`,
         );
       }
     }
@@ -685,30 +688,23 @@ export class TypesBuilder {
 
       if (type === 'subscription') {
         if (result instanceof BrokerBus) {
-          // TODO: improve performance
           const observable = new Observable(subscriber => {
             result.subscribe(value => subscriber.next(serializeResult(value)));
           });
           return observableToAsyncIterable(observable);
         }
 
+        if (result instanceof Observable) {
+          return observableToAsyncIterable(result.pipe(map(value => serializeResult(value))));
+        }
+
         if (!isAsyncIterable(result)) {
           throw new Error(
-            `Return type of ${reflectionMethod.name} subscription method on ${resolver.constructor.name} class resolver must be an AsyncIterable<T> or BrokerBus<T>`,
+            `The return type of "${reflectionMethod.name}" method on "${resolver.constructor.name}" class must be AsyncGenerator<T>, AsyncIterable<T>, Observable<T> or BrokerBus<T>`,
           );
         }
 
-        // TODO: improve performance
-        return observableToAsyncIterable(
-          new Observable(
-            subscriber =>
-              void (async () => {
-                for await (const value of result) {
-                  subscriber.next(serializeResult(value));
-                }
-              })(),
-          ),
-        );
+        return transformAsyncIteratorResult(result, value => serializeResult(value));
       }
 
       return serializeResult(result);
@@ -807,8 +803,6 @@ export class TypesBuilder {
     }
 
     const reflectionMethod = reflectionClass.getMethod(field.property);
-
-    // const returnType = createReturnType(reflectionMethod.type.return);
 
     const resolve = this.createResolveFunction<T>(
       instance,

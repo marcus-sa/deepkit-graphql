@@ -1,4 +1,9 @@
-import { GraphQLEnumType, GraphQLID, GraphQLUnionType } from 'graphql';
+import {
+  GraphQLEnumType,
+  GraphQLID,
+  GraphQLNonNull,
+  GraphQLUnionType,
+} from 'graphql';
 import { InjectorContext, InjectorModule } from '@deepkit/injector';
 import {
   float,
@@ -12,6 +17,8 @@ import {
   NegativeNoZero,
   Positive,
   PositiveNoZero,
+  reflect,
+  ReflectionClass,
   ReflectionMethod,
   typeOf,
   UUID,
@@ -43,6 +50,14 @@ import {
 import { TypesBuilder } from './types-builder';
 import { ID } from './types';
 import { Resolvers } from './resolvers';
+import {
+  Broker,
+  BrokerBus,
+  BrokerBusChannel,
+  BrokerMemoryAdapter,
+} from '@deepkit/broker';
+import { isAsyncIterable } from './utils';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 describe('TypesBuilder', () => {
   let builder: TypesBuilder;
@@ -52,6 +67,190 @@ describe('TypesBuilder', () => {
       new Resolvers([]),
       new InjectorContext(new InjectorModule()),
     );
+  });
+
+  describe('createResolveFunction', () => {
+    describe('given subscription', () => {
+      it('works with Observable', async () => {
+        class Resolver {
+          async subscribe(): Promise<Observable<string>> {
+            return new BehaviorSubject('Observable');
+          }
+        }
+
+        const resolver = new Resolver();
+
+        const reflectionClass = ReflectionClass.from<Resolver>();
+        const reflectionMethod = reflectionClass.getMethod('subscribe');
+
+        const resolve = (builder as TypesBuilder & any).createResolveFunction(
+          resolver,
+          reflectionMethod,
+          [],
+          'subscription',
+        );
+
+        const asyncIterable: AsyncIterable<unknown> = await resolve(
+          undefined,
+          {},
+        );
+
+        expect(isAsyncIterable(asyncIterable)).toBe(true);
+
+        const asyncIterator = asyncIterable[Symbol.asyncIterator]();
+
+        expect(await asyncIterator.next()).toStrictEqual({
+          done: false,
+          value: 'Observable',
+        });
+      });
+
+      it('works with AsyncGenerator', async () => {
+        class Resolver {
+          async *subscribe(): AsyncGenerator<string> {
+            yield 'AsyncGenerator';
+          }
+        }
+
+        const resolver = new Resolver();
+
+        const reflectionClass = ReflectionClass.from<Resolver>();
+        const reflectionMethod = reflectionClass.getMethod('subscribe');
+
+        const resolve = (builder as TypesBuilder & any).createResolveFunction(
+          resolver,
+          reflectionMethod,
+          [],
+          'subscription',
+        );
+
+        const asyncIterable: AsyncIterable<unknown> = await resolve(
+          undefined,
+          {},
+        );
+
+        expect(isAsyncIterable(asyncIterable)).toBe(true);
+
+        const asyncIterator = asyncIterable[Symbol.asyncIterator]();
+
+        expect(await asyncIterator.next()).toStrictEqual({
+          done: false,
+          value: 'AsyncGenerator',
+        });
+      });
+
+      it('works with AsyncIterable', async () => {
+        class Resolver {
+          subscribe(): AsyncIterable<string> {
+            return {
+              [Symbol.asyncIterator]() {
+                return {
+                  async next() {
+                    return {
+                      done: false,
+                      value: 'AsyncIterable',
+                    };
+                  },
+                };
+              },
+            };
+          }
+        }
+
+        const resolver = new Resolver();
+
+        const reflectionClass = ReflectionClass.from<Resolver>();
+        const reflectionMethod = reflectionClass.getMethod('subscribe');
+
+        const resolve = (builder as TypesBuilder & any).createResolveFunction(
+          resolver,
+          reflectionMethod,
+          [],
+          'subscription',
+        );
+
+        const asyncIterable: AsyncIterable<unknown> = await resolve(
+          undefined,
+          {},
+        );
+
+        expect(isAsyncIterable(asyncIterable)).toBe(true);
+
+        const asyncIterator = asyncIterable[Symbol.asyncIterator]();
+
+        expect(await asyncIterator.next()).toStrictEqual({
+          done: false,
+          value: 'AsyncIterable',
+        });
+      });
+
+      it('works with BrokerBus', async () => {
+        const broker = new Broker(new BrokerMemoryAdapter());
+
+        type UserEvents = { type: 'user-created'; id: number };
+        type UserEventChannel = BrokerBusChannel<UserEvents, 'user-events'>;
+
+        const channel = broker.busChannel<UserEventChannel>();
+
+        class Resolver {
+          subscribe(): BrokerBus<UserEvents> {
+            return channel;
+          }
+        }
+
+        const resolver = new Resolver();
+
+        const reflectionClass = ReflectionClass.from<Resolver>();
+        const reflectionMethod = reflectionClass.getMethod('subscribe');
+
+        const resolve = (builder as TypesBuilder & any).createResolveFunction(
+          resolver,
+          reflectionMethod,
+          [],
+          'subscription',
+        );
+
+        const asyncIterable: AsyncIterable<unknown> = await resolve(
+          undefined,
+          {},
+        );
+
+        expect(isAsyncIterable(asyncIterable)).toBe(true);
+
+        const asyncIterator = asyncIterable[Symbol.asyncIterator]();
+
+        const message = { type: 'user-created', id: 1 };
+
+        await channel.publish(message);
+
+        expect(await asyncIterator.next()).toStrictEqual({
+          done: false,
+          value: message,
+        });
+      });
+
+      it('throws an error when return type of method is incorrect', () => {
+        class Resolver {
+          subscribe() {}
+        }
+
+        const resolver = new Resolver();
+
+        const reflectionClass = ReflectionClass.from<Resolver>();
+        const reflectionMethod = reflectionClass.getMethod('subscribe');
+
+        expect(() =>
+          (builder as TypesBuilder & any).createResolveFunction(
+            resolver,
+            reflectionMethod,
+            [],
+            'subscription',
+          ),
+        ).toThrowErrorMatchingInlineSnapshot(
+          `"The return type of "subscribe" method on "Resolver" class must be AsyncGenerator<T>, AsyncIterable<T>, Observable<T> or BrokerBus<T>"`,
+        );
+      });
+    });
   });
 
   test('ID', () => {
@@ -123,6 +322,62 @@ describe('TypesBuilder', () => {
 
     const type = builder.createReturnType(returnType);
     expect(type).toBe(GraphQLVoid);
+  });
+
+  test('Promise return type', () => {
+    // @ts-expect-error type only
+    async function test(): Promise<string> {}
+
+    const reflectionMethod = ReflectionMethod.from(test);
+    const returnType = reflectionMethod.getReturnType();
+
+    const type = builder.createReturnType(returnType);
+    expect(type).toMatchInlineSnapshot();
+  });
+
+  test('AsyncGenerator return type', () => {
+    async function* test(): AsyncGenerator<string> {}
+
+    const reflectionMethod = ReflectionMethod.from(test);
+    const returnType = reflectionMethod.getReturnType();
+
+    const type = builder.createReturnType(returnType);
+    expect(type).toMatchInlineSnapshot(`"String!"`);
+  });
+
+  test('AsyncIterable return type', () => {
+    // @ts-expect-error type only
+    function test(): AsyncIterable<string> {}
+
+    const reflectionMethod = ReflectionMethod.from(test);
+    const returnType = reflectionMethod.getReturnType();
+
+    const type = builder.createReturnType(returnType);
+    expect(type).toMatchInlineSnapshot(`"String!"`);
+  });
+
+  test('Observable return type', () => {
+    // @ts-expect-error type only
+    function test(): Observable<string> {}
+
+    const reflectionMethod = ReflectionMethod.from(test);
+    const returnType = reflectionMethod.getReturnType();
+
+    const type = builder.createReturnType(returnType);
+    expect(type).toMatchInlineSnapshot(`"String!"`);
+  });
+
+  test('BrokerBus return type', () => {
+    type UserCreatedEvent = { type: 'user-created'; id: number };
+
+    // @ts-expect-error type only
+    function test(): BrokerBus<UserCreatedEvent> {}
+
+    const reflectionMethod = ReflectionMethod.from(test);
+    const returnType = reflectionMethod.getReturnType();
+
+    const type = builder.createReturnType(returnType);
+    expect(type).toMatchInlineSnapshot(`"UserCreatedEvent!"`);
   });
 
   test('interface array', () => {

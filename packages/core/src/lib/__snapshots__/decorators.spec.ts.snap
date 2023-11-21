@@ -34,7 +34,7 @@ exports[`mutation args validation 1`] = `
   },
   "errors": [
     [GraphQLError: Validation error:
-data.username(minLength): Min length is 6],
+data.username(minLength): Min length is 6 caused by value "Test"],
   ],
 }
 `;

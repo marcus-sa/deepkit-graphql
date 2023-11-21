@@ -1,6 +1,12 @@
 import { GraphQLEnumType, GraphQLID, GraphQLUnionType } from 'graphql';
 import { InjectorContext, InjectorModule } from '@deepkit/injector';
 import {
+  BrokerBus,
+  BrokerBusChannel,
+  BrokerMemoryAdapter,
+} from '@deepkit/broker';
+import { BehaviorSubject, Observable } from 'rxjs';
+import {
   float,
   float32,
   float64,
@@ -12,8 +18,8 @@ import {
   NegativeNoZero,
   Positive,
   PositiveNoZero,
+  ReflectionClass,
   ReflectionMethod,
-  typeOf,
   UUID,
 } from '@deepkit/type';
 import {
@@ -43,6 +49,8 @@ import {
 import { TypesBuilder } from './types-builder';
 import { ID } from './types';
 import { Resolvers } from './resolvers';
+import { isAsyncIterable } from './utils';
+import { InvalidSubscriptionTypeError } from './errors';
 
 describe('TypesBuilder', () => {
   let builder: TypesBuilder;
@@ -52,6 +60,187 @@ describe('TypesBuilder', () => {
       new Resolvers([]),
       new InjectorContext(new InjectorModule()),
     );
+  });
+
+  describe('createResolveFunction', () => {
+    describe('given subscription', () => {
+      it('works with Observable', async () => {
+        class Resolver {
+          async subscribe(): Promise<Observable<string>> {
+            return new BehaviorSubject('Observable');
+          }
+        }
+
+        const resolver = new Resolver();
+
+        const reflectionClass = ReflectionClass.from<Resolver>();
+        const reflectionMethod = reflectionClass.getMethod('subscribe');
+
+        const resolve = (builder as TypesBuilder & any).createResolveFunction(
+          resolver,
+          reflectionMethod,
+          [],
+          'subscription',
+        );
+
+        const asyncIterable: AsyncIterable<unknown> = await resolve(
+          undefined,
+          {},
+        );
+
+        expect(isAsyncIterable(asyncIterable)).toBe(true);
+
+        const asyncIterator = asyncIterable[Symbol.asyncIterator]();
+
+        expect(await asyncIterator.next()).toStrictEqual({
+          done: false,
+          value: 'Observable',
+        });
+      });
+
+      it('works with AsyncGenerator', async () => {
+        class Resolver {
+          async *subscribe(): AsyncGenerator<string> {
+            yield 'AsyncGenerator';
+          }
+        }
+
+        const resolver = new Resolver();
+
+        const reflectionClass = ReflectionClass.from<Resolver>();
+        const reflectionMethod = reflectionClass.getMethod('subscribe');
+
+        const resolve = (builder as TypesBuilder & any).createResolveFunction(
+          resolver,
+          reflectionMethod,
+          [],
+          'subscription',
+        );
+
+        const asyncIterable: AsyncIterable<unknown> = await resolve(
+          undefined,
+          {},
+        );
+
+        expect(isAsyncIterable(asyncIterable)).toBe(true);
+
+        const asyncIterator = asyncIterable[Symbol.asyncIterator]();
+
+        expect(await asyncIterator.next()).toStrictEqual({
+          done: false,
+          value: 'AsyncGenerator',
+        });
+      });
+
+      it('works with AsyncIterable', async () => {
+        class Resolver {
+          subscribe(): AsyncIterable<string> {
+            return {
+              [Symbol.asyncIterator]() {
+                return {
+                  async next() {
+                    return {
+                      done: false,
+                      value: 'AsyncIterable',
+                    };
+                  },
+                };
+              },
+            };
+          }
+        }
+
+        const resolver = new Resolver();
+
+        const reflectionClass = ReflectionClass.from<Resolver>();
+        const reflectionMethod = reflectionClass.getMethod('subscribe');
+
+        const resolve = (builder as TypesBuilder & any).createResolveFunction(
+          resolver,
+          reflectionMethod,
+          [],
+          'subscription',
+        );
+
+        const asyncIterable: AsyncIterable<unknown> = await resolve(
+          undefined,
+          {},
+        );
+
+        expect(isAsyncIterable(asyncIterable)).toBe(true);
+
+        const asyncIterator = asyncIterable[Symbol.asyncIterator]();
+
+        expect(await asyncIterator.next()).toStrictEqual({
+          done: false,
+          value: 'AsyncIterable',
+        });
+      });
+
+      it('works with BrokerBus', async () => {
+        const broker = new BrokerBus(new BrokerMemoryAdapter());
+
+        type UserEvents = { type: 'user-created'; id: number };
+
+        const channel = broker.channel<UserEvents>('user-events');
+
+        class Resolver {
+          subscribe(): BrokerBusChannel<UserEvents> {
+            return channel;
+          }
+        }
+
+        const resolver = new Resolver();
+
+        const reflectionClass = ReflectionClass.from<Resolver>();
+        const reflectionMethod = reflectionClass.getMethod('subscribe');
+
+        const resolve = (builder as TypesBuilder & any).createResolveFunction(
+          resolver,
+          reflectionMethod,
+          [],
+          'subscription',
+        );
+
+        const asyncIterable: AsyncIterable<unknown> = await resolve(
+          undefined,
+          {},
+        );
+
+        expect(isAsyncIterable(asyncIterable)).toBe(true);
+
+        const asyncIterator = asyncIterable[Symbol.asyncIterator]();
+
+        const message = { type: 'user-created', id: 1 };
+
+        await channel.publish(message);
+
+        expect(await asyncIterator.next()).toStrictEqual({
+          done: false,
+          value: message,
+        });
+      });
+
+      it('throws an error when return type of method is incorrect', () => {
+        class Resolver {
+          subscribe() {}
+        }
+
+        const resolver = new Resolver();
+
+        const reflectionClass = ReflectionClass.from<Resolver>();
+        const reflectionMethod = reflectionClass.getMethod('subscribe');
+
+        expect(() =>
+          (builder as TypesBuilder & any).createResolveFunction(
+            resolver,
+            reflectionMethod,
+            [],
+            'subscription',
+          ),
+        ).toThrowError(InvalidSubscriptionTypeError);
+      });
+    });
   });
 
   test('ID', () => {
@@ -77,28 +266,25 @@ describe('TypesBuilder', () => {
       readonly type: 'cat';
     }
 
-    type AnimalU = Dog | Cat;
-
     const list = builder.createOutputType<
-      readonly AnimalU[]
+      readonly (Dog | Cat)[]
     >() as GraphQLList<GraphQLObjectType>;
 
     expect(list).toBeInstanceOf(GraphQLList);
-    expect(list.ofType.name).toEqual('AnimalU');
     expect(list.ofType.toConfig()).toMatchInlineSnapshot(`
-          {
-            "astNode": undefined,
-            "description": undefined,
-            "extensionASTNodes": [],
-            "extensions": {},
-            "name": "AnimalU",
-            "resolveType": undefined,
-            "types": [
-              "Dog",
-              "Cat",
-            ],
-          }
-      `);
+      {
+        "astNode": undefined,
+        "description": undefined,
+        "extensionASTNodes": [],
+        "extensions": {},
+        "name": "DogCat",
+        "resolveType": undefined,
+        "types": [
+          "Dog",
+          "Cat",
+        ],
+      }
+    `);
   });
 
   test('void', () => {
@@ -124,6 +310,62 @@ describe('TypesBuilder', () => {
 
     const type = builder.createReturnType(returnType);
     expect(type).toBe(GraphQLVoid);
+  });
+
+  test('Promise return type', () => {
+    // @ts-expect-error type only
+    async function test(): Promise<string> {}
+
+    const reflectionMethod = ReflectionMethod.from(test);
+    const returnType = reflectionMethod.getReturnType();
+
+    const type = builder.createReturnType(returnType);
+    expect(type).toMatchInlineSnapshot(`"String!"`);
+  });
+
+  test('AsyncGenerator return type', () => {
+    async function* test(): AsyncGenerator<string> {}
+
+    const reflectionMethod = ReflectionMethod.from(test);
+    const returnType = reflectionMethod.getReturnType();
+
+    const type = builder.createReturnType(returnType);
+    expect(type).toMatchInlineSnapshot(`"String!"`);
+  });
+
+  test('AsyncIterable return type', () => {
+    // @ts-expect-error type only
+    function test(): AsyncIterable<string> {}
+
+    const reflectionMethod = ReflectionMethod.from(test);
+    const returnType = reflectionMethod.getReturnType();
+
+    const type = builder.createReturnType(returnType);
+    expect(type).toMatchInlineSnapshot(`"String!"`);
+  });
+
+  test('Observable return type', () => {
+    // @ts-expect-error type only
+    function test(): Observable<string> {}
+
+    const reflectionMethod = ReflectionMethod.from(test);
+    const returnType = reflectionMethod.getReturnType();
+
+    const type = builder.createReturnType(returnType);
+    expect(type).toMatchInlineSnapshot(`"String!"`);
+  });
+
+  test('BrokerBus return type', () => {
+    type UserCreatedEvent = { type: 'user-created'; id: number };
+
+    // @ts-expect-error type only
+    function test(): BrokerBus<UserCreatedEvent> {}
+
+    const reflectionMethod = ReflectionMethod.from(test);
+    const returnType = reflectionMethod.getReturnType();
+
+    const type = builder.createReturnType(returnType);
+    expect(type).toMatchInlineSnapshot(`"BrokerBus!"`);
   });
 
   test('interface array', () => {
@@ -298,7 +540,7 @@ describe('TypesBuilder', () => {
       `);
   });
 
-  test('../../deepkit/deepkit-framework/dist', () => {
+  test('union', () => {
     interface Animal {
       readonly type: string;
     }
@@ -508,7 +750,8 @@ describe('TypesBuilder', () => {
   }*/,
   );
 
-  test.todo('extends'/*, () => {
+  test.todo(
+    'extends' /*, () => {
     interface Produce {
       readonly type: string;
       readonly test: string;
@@ -521,5 +764,6 @@ describe('TypesBuilder', () => {
     interface Vegetable extends Produce {
       readonly type: 'vegetable';
     }
-  }*/);
+  }*/,
+  );
 });

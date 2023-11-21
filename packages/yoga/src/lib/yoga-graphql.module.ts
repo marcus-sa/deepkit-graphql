@@ -11,7 +11,6 @@ export class YogaGraphQLModule extends createModule({
   config: YogaGraphQLConfig,
   forRoot: true,
 }) {
-
   constructor(options: YogaGraphQLServerOptions) {
     super(options);
   }

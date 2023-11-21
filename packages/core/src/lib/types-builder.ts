@@ -1,32 +1,37 @@
 import { asyncOperation, isClass } from '@deepkit/core';
 import { InjectorContext } from '@deepkit/injector';
+import { BrokerBusChannel } from '@deepkit/broker';
+import { map, Observable } from 'rxjs';
+import { observableToAsyncIterable } from '@graphql-tools/utils';
+import { TypeNumberBrand } from '@deepkit/type-spec';
 import {
+  deserializeFunction,
   ReceiveType,
+  reflect,
   ReflectionClass,
   ReflectionKind,
+  ReflectionMethod,
   ReflectionParameter,
   resolveReceiveType,
-  reflect,
+  serializeFunction,
+  serializer,
   Type,
   TypeArray,
   TypeClass,
   TypeEnum,
-  TypeNumberBrand,
   TypeObjectLiteral,
-  TypeUnion,
-  ReflectionMethod,
   TypePropertySignature,
-  deserializeFunction,
-  serializer,
+  TypeUnion,
   validateFunction,
-  serializeFunction,
   ValidationError,
 } from '@deepkit/type';
 import {
   GraphQLEnumType,
   GraphQLEnumValueConfigMap,
+  GraphQLError,
   GraphQLFieldConfig,
   GraphQLFieldConfigMap,
+  GraphQLFieldResolver,
   GraphQLInputObjectType,
   GraphQLInputType,
   GraphQLList,
@@ -36,44 +41,45 @@ import {
   GraphQLObjectType,
   GraphQLOutputType,
   GraphQLScalarType,
-  GraphQLError,
-  GraphQLFieldResolver,
   GraphQLUnionType,
 } from 'graphql';
 
 import { Context, GraphQLFields, Instance, InternalMiddleware } from './types';
 import { typeResolvers } from './decorators';
 import { Resolvers } from './resolvers';
-import { TypeNameRequiredError } from './errors';
+import { InvalidSubscriptionTypeError, TypeNameRequiredError } from './errors';
 import {
   BigInt,
-  Void,
   Boolean,
-  ID as GraphQLID,
+  Byte,
+  DateTime,
   Float,
-  PositiveFloat,
-  NegativeFloat,
-  NonPositiveFloat,
-  NonNegativeFloat,
-  PositiveInt,
+  ID as GraphQLID,
   Int,
+  NegativeFloat,
   NegativeInt,
+  NonNegativeFloat,
   NonNegativeInt,
+  NonPositiveFloat,
   NonPositiveInt,
+  PositiveFloat,
+  PositiveInt,
   String,
   UUID,
-  DateTime,
-  Byte,
+  Void,
 } from './scalars';
 import {
+  excludeNullAndUndefinedTypes,
   filterReflectionParametersMetaAnnotationsForArguments,
+  getClassDecoratorMetadata,
   getContextMetaAnnotationReflectionParameterIndex,
   getParentMetaAnnotationReflectionParameterIndex,
   getTypeName,
-  excludeNullAndUndefinedTypes,
+  isAsyncIterable,
+  maybeUnwrapPromiseLikeType,
+  maybeUnwrapSubscriptionReturnType,
   requireTypeName,
-  unwrapPromiseLikeType,
-  getClassDecoratorMetadata,
+  transformAsyncIteratorResult,
 } from './utils';
 
 export class TypesBuilder {
@@ -324,10 +330,8 @@ export class TypesBuilder {
 
     switch (type.kind) {
       case ReflectionKind.union: {
-        const typesWithoutNullAndUndefined = type.types.filter(
-          type =>
-            type.kind !== ReflectionKind.undefined &&
-            type.kind !== ReflectionKind.null,
+        const typesWithoutNullAndUndefined = excludeNullAndUndefinedTypes(
+          type.types,
         );
 
         if (typesWithoutNullAndUndefined.length === 1) {
@@ -423,8 +427,7 @@ export class TypesBuilder {
         }
 
         let config: GraphQLFieldConfig<unknown, unknown> = {
-          // TODO
-          // description: '',
+          description: property.property.description,
           // TODO
           // deprecationReason: '',
           type,
@@ -444,7 +447,8 @@ export class TypesBuilder {
   }
 
   createReturnType(type: Type): GraphQLOutputType {
-    type = unwrapPromiseLikeType(type);
+    type = maybeUnwrapPromiseLikeType(type);
+    type = maybeUnwrapSubscriptionReturnType(type);
 
     const isNullable =
       type.kind === ReflectionKind.void ||
@@ -514,13 +518,13 @@ export class TypesBuilder {
     const name = requireTypeName(type);
 
     if (this.outputObjectTypes.has(name)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return this.outputObjectTypes.get(name)!;
     }
 
     const objectType = new GraphQLObjectType({
       name,
-      // TODO
-      // description: '',
+      description: type.description,
       // TODO
       // deprecationReason: '',
       fields: () => {
@@ -537,13 +541,13 @@ export class TypesBuilder {
     const name = requireTypeName(type);
 
     if (this.inputObjectTypes.has(name)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return this.inputObjectTypes.get(name)!;
     }
 
     const inputObjectType = new GraphQLInputObjectType({
       name,
-      // TODO
-      // description: '',
+      description: type.description,
       // TODO
       // deprecationReason: '',
       fields: () => this.createInputFields(type),
@@ -570,17 +574,45 @@ export class TypesBuilder {
     }
   }
 
+  // TODO: move return type resolution and validation into decorators
+  private getSerializableResolveFunctionReturnType<T>(
+    resolver: Instance<T>,
+    reflectionMethod: ReflectionMethod,
+    type: 'query' | 'mutation' | 'subscription' | 'resolveField',
+  ): Type {
+    const returnType = maybeUnwrapPromiseLikeType(reflectionMethod.type.return);
+    if (type !== 'subscription') return returnType;
+
+    if (
+      returnType.typeName === 'AsyncGenerator' ||
+      returnType.typeName === 'AsyncIterable' ||
+      (returnType as TypeClass).classType === BrokerBusChannel ||
+      (returnType as TypeClass).classType === Observable
+    ) {
+      return maybeUnwrapSubscriptionReturnType(returnType);
+    }
+
+    throw new InvalidSubscriptionTypeError(
+      returnType,
+      reflectionMethod.name,
+      resolver.constructor.name,
+    );
+  }
+
   private createResolveFunction<Resolver, Args extends unknown[] = []>(
-    instance: Resolver,
-    { parameters, name, type }: ReflectionMethod,
+    resolver: Instance<Resolver>,
+    reflectionMethod: ReflectionMethod,
     middlewares: readonly InternalMiddleware[],
+    type: 'query' | 'mutation' | 'subscription' | 'resolveField',
   ): GraphQLFieldResolver<unknown, unknown, any> {
-    const resolve = (instance[name as keyof Resolver] as Function).bind(
-      instance,
-    ) as (...args: Args) => unknown;
+    const resolve = (
+      resolver[reflectionMethod.name as keyof Resolver] as Function
+    ).bind(resolver) as (...args: Args) => unknown;
 
     const argsParameters =
-      filterReflectionParametersMetaAnnotationsForArguments(parameters);
+      filterReflectionParametersMetaAnnotationsForArguments(
+        reflectionMethod.parameters,
+      );
 
     const argsType: TypeObjectLiteral = {
       kind: ReflectionKind.objectLiteral,
@@ -595,10 +627,14 @@ export class TypesBuilder {
     }));
 
     const parentParameterIndex =
-      getParentMetaAnnotationReflectionParameterIndex(parameters);
+      getParentMetaAnnotationReflectionParameterIndex(
+        reflectionMethod.parameters,
+      );
 
     const contextParameterIndex =
-      getContextMetaAnnotationReflectionParameterIndex(parameters);
+      getContextMetaAnnotationReflectionParameterIndex(
+        reflectionMethod.parameters,
+      );
 
     const deserializeArgs = deserializeFunction(
       { loosely: false },
@@ -609,11 +645,17 @@ export class TypesBuilder {
 
     const validateArgs = validateFunction(serializer, argsType);
 
+    const returnType = this.getSerializableResolveFunctionReturnType(
+      resolver,
+      reflectionMethod,
+      type,
+    );
+
     const serializeResult = serializeFunction(
       undefined,
       serializer,
       undefined,
-      type.return,
+      returnType,
     );
 
     return async (parent, _args, context) => {
@@ -623,7 +665,7 @@ export class TypesBuilder {
         const originalError = new ValidationError(argsValidationErrors);
         throw new GraphQLError(originalError.message, {
           originalError,
-          path: [name],
+          path: [reflectionMethod.name],
         });
       }
 
@@ -644,8 +686,74 @@ export class TypesBuilder {
       }
 
       const result = await resolve(...resolveArgs);
+
+      if (type === 'subscription') {
+        if (result instanceof BrokerBusChannel) {
+          const observable = new Observable(subscriber => {
+            result.subscribe((value: unknown) => subscriber.next(serializeResult(value)));
+          });
+          return observableToAsyncIterable(observable);
+        }
+
+        if (result instanceof Observable) {
+          return observableToAsyncIterable(
+            result.pipe(map(value => serializeResult(value))),
+          );
+        }
+
+        if (!isAsyncIterable(result)) {
+          throw new InvalidSubscriptionTypeError(
+            reflect(result),
+            reflectionMethod.name,
+            resolver.constructor.name,
+          );
+        }
+
+        return transformAsyncIteratorResult(result, value =>
+          serializeResult(value),
+        );
+      }
+
       return serializeResult(result);
     };
+  }
+
+  generateSubscriptionResolverFields<T>(
+    instance: Instance<T>,
+  ): GraphQLFieldConfigMap<unknown, unknown> {
+    const resolver = getClassDecoratorMetadata(instance.constructor);
+    const resolverType = reflect(instance.constructor);
+    const reflectionClass = ReflectionClass.from(resolverType);
+
+    const fields = new Map<string, GraphQLFieldConfig<unknown, unknown>>();
+
+    // eslint-disable-next-line functional/no-loop-statement
+    for (const [methodName, subscription] of resolver.subscriptions.entries()) {
+      const reflectionMethod = reflectionClass.getMethod(methodName);
+
+      const args = this.createInputArgsFromReflectionParameters(
+        reflectionMethod.parameters,
+      );
+
+      const returnType = this.createReturnType(reflectionMethod.type.return);
+
+      const resolve = this.createResolveFunction<T>(
+        instance,
+        reflectionMethod,
+        [...resolver.middleware, ...subscription.middleware],
+        'subscription',
+      );
+
+      fields.set(subscription.name, {
+        type: returnType,
+        description: subscription.description,
+        deprecationReason: subscription.deprecationReason,
+        args,
+        resolve,
+      });
+    }
+
+    return Object.fromEntries(fields.entries());
   }
 
   generateMutationResolverFields<T>(
@@ -671,6 +779,7 @@ export class TypesBuilder {
         instance,
         reflectionMethod,
         [...resolver.middleware, ...mutation.middleware],
+        'mutation',
       );
 
       fields.set(mutation.name, {
@@ -702,12 +811,12 @@ export class TypesBuilder {
 
     const reflectionMethod = reflectionClass.getMethod(field.property);
 
-    // const returnType = createReturnType(reflectionMethod.type.return);
-
-    const resolve = this.createResolveFunction<T>(instance, reflectionMethod, [
-      ...resolver.middleware,
-      ...field.middleware,
-    ]);
+    const resolve = this.createResolveFunction<T>(
+      instance,
+      reflectionMethod,
+      [...resolver.middleware, ...field.middleware],
+      'resolveField',
+    );
 
     const args = this.createInputArgsFromReflectionParameters(
       reflectionMethod.parameters,
@@ -744,6 +853,7 @@ export class TypesBuilder {
         instance,
         reflectionMethod,
         [...resolver.middleware, ...query.middleware],
+        'query',
       );
 
       fields.set(query.name, {

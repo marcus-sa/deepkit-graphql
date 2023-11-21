@@ -211,6 +211,48 @@ test('mutation middleware is invoked', async () => {
   expect(testResolverSpy).toHaveBeenCalled();
 });
 
+test('subscription middleware is invoked', async () => {
+  class TestMiddleware implements GraphQLMiddleware {
+    execute(context: Context<unknown>, next: () => void): void {
+      next();
+    }
+  }
+
+  @graphql.resolver()
+  class TestResolver {
+    @graphql.subscription().middleware(TestMiddleware)
+    async *create(): AsyncGenerator<boolean> {
+      yield true;
+    }
+  }
+
+  const injectorContext = new InjectorContext(
+    new InjectorModule([TestResolver, TestMiddleware]),
+  );
+
+  const testResolver = injectorContext.get(TestResolver);
+
+  const testResolverSpy = jest.spyOn(testResolver, 'create');
+
+  const testMiddleware = injectorContext.get(TestMiddleware);
+
+  const testMiddlewareExecuteSpy = jest.spyOn(testMiddleware, 'execute');
+
+  const resolvers = new Resolvers([testResolver]);
+
+  const schema = buildSchema(resolvers, injectorContext);
+
+  await executeGraphQL({
+    schema,
+    contextValue: {},
+    source: `subscription { create }`,
+  });
+
+  expect(testMiddlewareExecuteSpy).toHaveBeenCalled();
+
+  expect(testResolverSpy).toHaveBeenCalled();
+});
+
 test('mutation', async () => {
   interface User {
     readonly id: integer & PositiveNoZero;

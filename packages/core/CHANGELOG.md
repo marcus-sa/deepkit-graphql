@@ -1,5 +1,19 @@
 
 
+## [0.2.0](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.1.2...core-v0.2.0) (2023-11-21)
+
+
+### Features
+
+* **core:** better subscription support ([aa216c2](https://github.com/marcus-sa/deepkit-graphql/commit/aa216c220f2a2c030d49263b665a933658982843))
+* upgrade deepkit dependencies ([529164a](https://github.com/marcus-sa/deepkit-graphql/commit/529164a3f2dd0088ef4b7b7319ac484e97562312))
+
+
+### Refactor
+
+* **core:** improve subscription internals ([830d920](https://github.com/marcus-sa/deepkit-graphql/commit/830d9202c90ab2a91889b74da823c948abbede34))
+* **core:** improve subscription internals ([f5bb7fb](https://github.com/marcus-sa/deepkit-graphql/commit/f5bb7fbc417c9a34b11ac7909c60f0ffe987e1ab))
+
 ## [0.1.2](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.1.1...core-v0.1.2) (2023-11-20)
 
 ## [0.1.1](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.0.7...core-v0.1.1) (2023-11-16)

@@ -18,7 +18,7 @@ import {
   Positive,
   PositiveNoZero,
   reflect,
-  ReflectionClass,
+  ReflectionClass, ReflectionKind,
   ReflectionMethod,
   typeOf,
   UUID,
@@ -275,27 +275,24 @@ describe('TypesBuilder', () => {
       readonly type: 'cat';
     }
 
-    type Animals = readonly (Dog | Cat)[];
-
     const list =
-      builder.createOutputType<Animals>() as GraphQLList<GraphQLObjectType>;
+      builder.createOutputType<readonly (Dog | Cat)[]>() as GraphQLList<GraphQLObjectType>;
 
     expect(list).toBeInstanceOf(GraphQLList);
-    expect(list.ofType.name).toEqual('Animals');
     expect(list.ofType.toConfig()).toMatchInlineSnapshot(`
-          {
-            "astNode": undefined,
-            "description": undefined,
-            "extensionASTNodes": [],
-            "extensions": {},
-            "name": "Animals",
-            "resolveType": undefined,
-            "types": [
-              "Dog",
-              "Cat",
-            ],
-          }
-      `);
+      {
+        "astNode": undefined,
+        "description": undefined,
+        "extensionASTNodes": [],
+        "extensions": {},
+        "name": "DogCat",
+        "resolveType": undefined,
+        "types": [
+          "Dog",
+          "Cat",
+        ],
+      }
+    `);
   });
 
   test('void', () => {
@@ -331,7 +328,7 @@ describe('TypesBuilder', () => {
     const returnType = reflectionMethod.getReturnType();
 
     const type = builder.createReturnType(returnType);
-    expect(type).toMatchInlineSnapshot();
+    expect(type).toMatchInlineSnapshot(`"String!"`);
   });
 
   test('AsyncGenerator return type', () => {

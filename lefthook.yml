@@ -2,7 +2,7 @@
 commit-msg:
   commands:
     commitlint:
-      run: yarn commitlint --edit {1}
+      run: pnpm commitlint --edit {1}
 pre-commit:
   commands:
     github-actions:
@@ -11,7 +11,7 @@ pre-commit:
       run: echo {staged_files} && actionlint
     eslint:
       glob: '*.{js,ts,jsx,tsx}'
-      run: yarn eslint --quiet --fix {staged_files} && git add {staged_files}
+      run: pnpm eslint --quiet --fix {staged_files} && git add {staged_files}
     prettier:
       glob: '*.{json,yml,yaml,html,graphql}'
-      run: yarn prettier --write {staged_files} && git add {staged_files}
+      run: pnpm prettier --write {staged_files} && git add {staged_files}

@@ -1,5 +1,12 @@
 
 
+## [0.2.0](https://github.com/marcus-sa/deepkit-graphql/compare/yoga-v0.1.2...yoga-v0.2.0) (2023-11-21)
+
+
+### Features
+
+* upgrade deepkit dependencies ([529164a](https://github.com/marcus-sa/deepkit-graphql/commit/529164a3f2dd0088ef4b7b7319ac484e97562312))
+
 ## 0.1.2 (2023-11-20)
 
 

@@ -1,35 +1,37 @@
 import { asyncOperation, isClass } from '@deepkit/core';
 import { InjectorContext } from '@deepkit/injector';
-import { BrokerBus } from '@deepkit/broker';
+import { BrokerBusChannel } from '@deepkit/broker';
 import { map, Observable } from 'rxjs';
 import { observableToAsyncIterable } from '@graphql-tools/utils';
+import { TypeNumberBrand } from '@deepkit/type-spec';
 import {
+  deserializeFunction,
   ReceiveType,
+  reflect,
   ReflectionClass,
   ReflectionKind,
+  ReflectionMethod,
   ReflectionParameter,
   resolveReceiveType,
-  reflect,
+  serializeFunction,
+  serializer,
   Type,
   TypeArray,
   TypeClass,
   TypeEnum,
-  TypeNumberBrand,
   TypeObjectLiteral,
-  TypeUnion,
-  ReflectionMethod,
   TypePropertySignature,
-  deserializeFunction,
-  serializer,
+  TypeUnion,
   validateFunction,
-  serializeFunction,
   ValidationError,
 } from '@deepkit/type';
 import {
   GraphQLEnumType,
   GraphQLEnumValueConfigMap,
+  GraphQLError,
   GraphQLFieldConfig,
   GraphQLFieldConfigMap,
+  GraphQLFieldResolver,
   GraphQLInputObjectType,
   GraphQLInputType,
   GraphQLList,
@@ -39,8 +41,6 @@ import {
   GraphQLObjectType,
   GraphQLOutputType,
   GraphQLScalarType,
-  GraphQLError,
-  GraphQLFieldResolver,
   GraphQLUnionType,
 } from 'graphql';
 
@@ -50,35 +50,35 @@ import { Resolvers } from './resolvers';
 import { InvalidSubscriptionTypeError, TypeNameRequiredError } from './errors';
 import {
   BigInt,
-  Void,
   Boolean,
-  ID as GraphQLID,
+  Byte,
+  DateTime,
   Float,
-  PositiveFloat,
-  NegativeFloat,
-  NonPositiveFloat,
-  NonNegativeFloat,
-  PositiveInt,
+  ID as GraphQLID,
   Int,
+  NegativeFloat,
   NegativeInt,
+  NonNegativeFloat,
   NonNegativeInt,
+  NonPositiveFloat,
   NonPositiveInt,
+  PositiveFloat,
+  PositiveInt,
   String,
   UUID,
-  DateTime,
-  Byte,
+  Void,
 } from './scalars';
 import {
+  excludeNullAndUndefinedTypes,
   filterReflectionParametersMetaAnnotationsForArguments,
+  getClassDecoratorMetadata,
   getContextMetaAnnotationReflectionParameterIndex,
   getParentMetaAnnotationReflectionParameterIndex,
   getTypeName,
-  excludeNullAndUndefinedTypes,
-  requireTypeName,
-  maybeUnwrapPromiseLikeType,
-  getClassDecoratorMetadata,
   isAsyncIterable,
+  maybeUnwrapPromiseLikeType,
   maybeUnwrapSubscriptionReturnType,
+  requireTypeName,
   transformAsyncIteratorResult,
 } from './utils';
 
@@ -581,27 +581,22 @@ export class TypesBuilder {
     type: 'query' | 'mutation' | 'subscription' | 'resolveField',
   ): Type {
     const returnType = maybeUnwrapPromiseLikeType(reflectionMethod.type.return);
-    if (type === 'subscription') {
-      if (
-        returnType.typeName === 'AsyncGenerator' ||
-        returnType.typeName === 'AsyncIterable' ||
-        // TODO: this will be available in next version of deepkit
-        // returnType.typeName === 'BrokerBus' ||
-        // returnType.typeName === 'Observable'
-        // TODO: remove when next version of deepkit is released
-        (returnType as TypeClass).classType === Observable ||
-        (returnType as TypeClass).classType === BrokerBus
-      ) {
-        return maybeUnwrapSubscriptionReturnType(returnType);
-      } else {
-        throw new InvalidSubscriptionTypeError(
-          returnType,
-          reflectionMethod.name,
-          resolver.constructor.name,
-        );
-      }
+    if (type !== 'subscription') return returnType;
+
+    if (
+      returnType.typeName === 'AsyncGenerator' ||
+      returnType.typeName === 'AsyncIterable' ||
+      (returnType as TypeClass).classType === BrokerBusChannel ||
+      (returnType as TypeClass).classType === Observable
+    ) {
+      return maybeUnwrapSubscriptionReturnType(returnType);
     }
-    return returnType;
+
+    throw new InvalidSubscriptionTypeError(
+      returnType,
+      reflectionMethod.name,
+      resolver.constructor.name,
+    );
   }
 
   private createResolveFunction<Resolver, Args extends unknown[] = []>(
@@ -650,15 +645,17 @@ export class TypesBuilder {
 
     const validateArgs = validateFunction(serializer, argsType);
 
+    const returnType = this.getSerializableResolveFunctionReturnType(
+      resolver,
+      reflectionMethod,
+      type,
+    );
+
     const serializeResult = serializeFunction(
       undefined,
       serializer,
       undefined,
-      this.getSerializableResolveFunctionReturnType(
-        resolver,
-        reflectionMethod,
-        type,
-      ),
+      returnType,
     );
 
     return async (parent, _args, context) => {
@@ -691,9 +688,9 @@ export class TypesBuilder {
       const result = await resolve(...resolveArgs);
 
       if (type === 'subscription') {
-        if (result instanceof BrokerBus) {
+        if (result instanceof BrokerBusChannel) {
           const observable = new Observable(subscriber => {
-            result.subscribe(value => subscriber.next(serializeResult(value)));
+            result.subscribe((value: unknown) => subscriber.next(serializeResult(value)));
           });
           return observableToAsyncIterable(observable);
         }

@@ -1,10 +1,11 @@
-import {
-  GraphQLEnumType,
-  GraphQLID,
-  GraphQLNonNull,
-  GraphQLUnionType,
-} from 'graphql';
+import { GraphQLEnumType, GraphQLID, GraphQLUnionType } from 'graphql';
 import { InjectorContext, InjectorModule } from '@deepkit/injector';
+import {
+  BrokerBus,
+  BrokerBusChannel,
+  BrokerMemoryAdapter,
+} from '@deepkit/broker';
+import { BehaviorSubject, Observable } from 'rxjs';
 import {
   float,
   float32,
@@ -17,10 +18,8 @@ import {
   NegativeNoZero,
   Positive,
   PositiveNoZero,
-  reflect,
-  ReflectionClass, ReflectionKind,
+  ReflectionClass,
   ReflectionMethod,
-  typeOf,
   UUID,
 } from '@deepkit/type';
 import {
@@ -50,14 +49,7 @@ import {
 import { TypesBuilder } from './types-builder';
 import { ID } from './types';
 import { Resolvers } from './resolvers';
-import {
-  Broker,
-  BrokerBus,
-  BrokerBusChannel,
-  BrokerMemoryAdapter,
-} from '@deepkit/broker';
 import { isAsyncIterable } from './utils';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { InvalidSubscriptionTypeError } from './errors';
 
 describe('TypesBuilder', () => {
@@ -186,15 +178,14 @@ describe('TypesBuilder', () => {
       });
 
       it('works with BrokerBus', async () => {
-        const broker = new Broker(new BrokerMemoryAdapter());
+        const broker = new BrokerBus(new BrokerMemoryAdapter());
 
         type UserEvents = { type: 'user-created'; id: number };
-        type UserEventChannel = BrokerBusChannel<UserEvents, 'user-events'>;
 
-        const channel = broker.busChannel<UserEventChannel>();
+        const channel = broker.channel<UserEvents>('user-events');
 
         class Resolver {
-          subscribe(): BrokerBus<UserEvents> {
+          subscribe(): BrokerBusChannel<UserEvents> {
             return channel;
           }
         }
@@ -275,8 +266,9 @@ describe('TypesBuilder', () => {
       readonly type: 'cat';
     }
 
-    const list =
-      builder.createOutputType<readonly (Dog | Cat)[]>() as GraphQLList<GraphQLObjectType>;
+    const list = builder.createOutputType<
+      readonly (Dog | Cat)[]
+    >() as GraphQLList<GraphQLObjectType>;
 
     expect(list).toBeInstanceOf(GraphQLList);
     expect(list.ofType.toConfig()).toMatchInlineSnapshot(`
@@ -373,7 +365,7 @@ describe('TypesBuilder', () => {
     const returnType = reflectionMethod.getReturnType();
 
     const type = builder.createReturnType(returnType);
-    expect(type).toMatchInlineSnapshot(`"UserCreatedEvent!"`);
+    expect(type).toMatchInlineSnapshot(`"BrokerBus!"`);
   });
 
   test('interface array', () => {

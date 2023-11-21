@@ -18,12 +18,6 @@ import { buildSchema } from './schema-builder';
 import { Resolvers } from './resolvers';
 import { Context, GraphQLMiddleware, Parent } from './types';
 import { InjectorContext, InjectorModule } from '@deepkit/injector';
-import {
-  Broker,
-  BrokerBus,
-  BrokerBusChannel,
-  BrokerMemoryAdapter,
-} from '@deepkit/broker';
 
 /*test('invalid return type for mutation', () => {
   expect(() => {

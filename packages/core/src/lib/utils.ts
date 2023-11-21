@@ -1,5 +1,5 @@
 import { AbstractClassType } from '@deepkit/core';
-import { BrokerBus } from '@deepkit/broker';
+import { BrokerBusChannel } from '@deepkit/broker';
 import {
   metaAnnotation,
   ReflectionKind,
@@ -147,10 +147,10 @@ export function maybeUnwrapSubscriptionReturnType(type: Type): Type {
 
     default:
       // TODO: remove when next version of deepkit is released
-      if ((type as TypeClass).classType === BrokerBus) {
+      if ((type as TypeClass).classType === BrokerBusChannel) {
         const typeArgument = type.typeArguments?.[0];
         if (!typeArgument) {
-          throw new Error('Missing type argument for BrokerBus<T>');
+          throw new Error('Missing type argument for BrokerBusChannel<T>');
         }
         return typeArgument;
       }

@@ -1,0 +1,13 @@
+diff --git a/lib/typescript.js b/lib/typescript.js
+index 4d0ee15506636db54c25a06224a64a03e4853610..3103075cc835a59e981472979c1ef665a41f9db3 100644
+--- a/lib/typescript.js
++++ b/lib/typescript.js
+@@ -86975,7 +86975,7 @@ ${lanes.join("\n")}
+         [183 /* TypeReference */]: function visitEachChildOfTypeReferenceNode(node, visitor, context, nodesVisitor, nodeVisitor, _tokenVisitor) {
+           return context.factory.updateTypeReferenceNode(
+             node,
+-            Debug.checkDefined(nodeVisitor(node.typeName, visitor, isEntityName)),
++            Debug.checkDefined(nodeVisitor(node.typeName, visitor, node => isTypeNode(node) || isEntityName(node))),
+             nodesVisitor(node.typeArguments, visitor, isTypeNode)
+           );
+         },

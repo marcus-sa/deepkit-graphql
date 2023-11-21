@@ -24,6 +24,6 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 
       - name: Lint pull request title
-        run: echo $PR_TITLE | yarn commitlint --verbose
+        run: echo $PR_TITLE | pnpm commitlint --verbose
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}

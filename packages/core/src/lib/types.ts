@@ -1,16 +1,15 @@
 import { ClassType, AbstractClassType } from '@deepkit/core';
+import { TypeAnnotation } from '@deepkit/type';
 
 export type GraphQLFields<T> = Record<string, { readonly type: T }>;
 
 export const PARENT_META_NAME = 'parent';
 
-// eslint-disable-next-line functional/prefer-readonly-type
-export type Parent<T> = T & { __meta?: [typeof PARENT_META_NAME, T] };
+export type Parent<T> = T & TypeAnnotation<typeof PARENT_META_NAME, T>;
 
 export const CONTEXT_META_NAME = 'context';
 
-// eslint-disable-next-line functional/prefer-readonly-type
-export type Context<T> = T & { __meta?: [typeof CONTEXT_META_NAME, T] };
+export type Context<T> = T & TypeAnnotation<typeof CONTEXT_META_NAME, T>;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type Instance<T = any> = T & {

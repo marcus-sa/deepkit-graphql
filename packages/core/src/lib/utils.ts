@@ -68,7 +68,6 @@ export function filterReflectionParametersMetaAnnotationsForArguments(
     getParentMetaAnnotationReflectionParameterIndex(argsParameters);
 
   if (parentIndex !== -1) {
-    // eslint-disable-next-line functional/immutable-data
     argsParameters.splice(parentIndex, 1);
   }
 
@@ -76,7 +75,6 @@ export function filterReflectionParametersMetaAnnotationsForArguments(
     getContextMetaAnnotationReflectionParameterIndex(argsParameters);
 
   if (contextIndex !== -1) {
-    // eslint-disable-next-line functional/immutable-data
     argsParameters.splice(contextIndex, 1);
   }
 
@@ -102,8 +100,8 @@ export function excludeNullAndUndefinedTypes(
 }
 
 export function maybeUnwrapSubscriptionReturnType(type: Type): Type {
-  switch (type.typeName) {
-    case 'Generator': {
+  switch (true) {
+    case type.typeName === 'Generator': {
       const typeArgument = type.typeArguments?.[0];
       if (!typeArgument) {
         throw new Error('Missing type argument for Generator<T>');
@@ -111,7 +109,7 @@ export function maybeUnwrapSubscriptionReturnType(type: Type): Type {
       return typeArgument;
     }
 
-    case 'AsyncGenerator': {
+    case type.typeName === 'AsyncGenerator': {
       const typeArgument = type.typeArguments?.[0];
       if (!typeArgument) {
         throw new Error('Missing type argument for AsyncGenerator<T>');
@@ -119,7 +117,7 @@ export function maybeUnwrapSubscriptionReturnType(type: Type): Type {
       return typeArgument;
     }
 
-    case 'AsyncIterable': {
+    case type.typeName === 'AsyncIterable': {
       const typeArgument = type.typeArguments?.[0];
       if (!typeArgument) {
         throw new Error('Missing type argument for AsyncIterable<T>');
@@ -127,42 +125,24 @@ export function maybeUnwrapSubscriptionReturnType(type: Type): Type {
       return typeArgument;
     }
 
-    // TODO: will be available next version of deepkit
-    // case BrokerBus.name: {
-    //   const typeArgument = (type as TypeClass).typeArguments?.[0];
-    //   if (!typeArgument) {
-    //     throw new Error('Missing type argument for BrokerBus<T>');
-    //   }
-    //   return typeArgument;
-    // }
 
-    // TODO: will be available next version of deepkit
-    // case Observable.name: {
-    //   const typeArgument = (type as TypeClass).typeArguments?.[0];
-    //   if (!typeArgument) {
-    //     throw new Error('Missing type argument for Observable<T>');
-    //   }
-    //   return typeArgument;
-    // }
+    case (type as TypeClass).classType === BrokerBusChannel: {
+      const typeArgument = type.typeArguments?.[0];
+      if (!typeArgument) {
+        throw new Error('Missing type argument for BrokerBusChannel<T>');
+      }
+      return typeArgument;
+    }
+
+    case ((type as TypeClass).classType === Observable): {
+      const typeArgument = type.typeArguments?.[0];
+      if (!typeArgument) {
+        throw new Error('Missing type argument for Observable<T>');
+      }
+      return typeArgument;
+    }
 
     default:
-      // TODO: remove when next version of deepkit is released
-      if ((type as TypeClass).classType === BrokerBusChannel) {
-        const typeArgument = type.typeArguments?.[0];
-        if (!typeArgument) {
-          throw new Error('Missing type argument for BrokerBusChannel<T>');
-        }
-        return typeArgument;
-      }
-      // TODO: remove when next version of deepkit is released
-      if ((type as TypeClass).classType === Observable) {
-        const typeArgument = type.typeArguments?.[0];
-        if (!typeArgument) {
-          throw new Error('Missing type argument for Observable<T>');
-        }
-        return typeArgument;
-      }
-
       return type;
   }
 }

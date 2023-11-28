@@ -1,5 +1,13 @@
 
 
+## [0.2.1](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.2.0...core-v0.2.1) (2023-11-28)
+
+
+### Refactor
+
+* **core:** maybeUnwrapSubscriptionReturnType function ([c87472a](https://github.com/marcus-sa/deepkit-graphql/commit/c87472af98ab45b730ed0939d807aee94ee75242))
+* **core:** use TypeAnnotation instead of manually specifying meta field ([6dc0554](https://github.com/marcus-sa/deepkit-graphql/commit/6dc05546e1b443a4d04bb191539f6369ceed16a9))
+
 ## [0.2.0](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.1.2...core-v0.2.0) (2023-11-21)
 
 

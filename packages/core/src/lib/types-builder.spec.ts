@@ -356,17 +356,17 @@ describe('TypesBuilder', () => {
     expect(type).toMatchInlineSnapshot(`"String!"`);
   });
 
-  test('BrokerBus return type', () => {
+  test('BrokerBusChannel return type', () => {
     type UserCreatedEvent = { type: 'user-created'; id: number };
 
     // @ts-expect-error type only
-    function test(): BrokerBus<UserCreatedEvent> {}
+    function test(): BrokerBusChannel<UserCreatedEvent> {}
 
     const reflectionMethod = ReflectionMethod.from(test);
     const returnType = reflectionMethod.getReturnType();
 
     const type = builder.createReturnType(returnType);
-    expect(type).toMatchInlineSnapshot(`"BrokerBus!"`);
+    expect(type).toMatchInlineSnapshot(`"UserCreatedEvent!"`);
   });
 
   test('interface array', () => {

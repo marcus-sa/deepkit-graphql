@@ -1,5 +1,12 @@
 
 
+## [0.3.0](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.2.1...core-v0.3.0) (2023-11-29)
+
+
+### Features
+
+* **core:** exclude excluded type properties in generated graphql object type ([6009c3d](https://github.com/marcus-sa/deepkit-graphql/commit/6009c3d2d4c90658af75f31d6b06af204089be58))
+
 ## [0.2.1](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.2.0...core-v0.2.1) (2023-11-28)
 
 

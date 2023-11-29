@@ -7,6 +7,7 @@ import {
 } from '@deepkit/broker';
 import { BehaviorSubject, Observable } from 'rxjs';
 import {
+  Excluded,
   float,
   float32,
   float64,
@@ -652,6 +653,44 @@ describe('TypesBuilder', () => {
             },
           }
       `);
+  });
+
+  test('excluded properties', () => {
+    interface User {
+      readonly id: string;
+      readonly username: string;
+      readonly password: string & Excluded;
+    }
+
+    const userObjectType =
+      builder.createOutputType<User>() as GraphQLObjectType;
+
+    expect(userObjectType.getFields()).toMatchInlineSnapshot(`
+      {
+        "id": {
+          "args": [],
+          "astNode": undefined,
+          "deprecationReason": undefined,
+          "description": undefined,
+          "extensions": {},
+          "name": "id",
+          "resolve": undefined,
+          "subscribe": undefined,
+          "type": "String!",
+        },
+        "username": {
+          "args": [],
+          "astNode": undefined,
+          "deprecationReason": undefined,
+          "description": undefined,
+          "extensions": {},
+          "name": "username",
+          "resolve": undefined,
+          "subscribe": undefined,
+          "type": "String!",
+        },
+      }
+    `);
   });
 
   test('circular references', () => {

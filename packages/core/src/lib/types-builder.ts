@@ -73,6 +73,7 @@ import {
   filterReflectionParametersMetaAnnotationsForArguments,
   getClassDecoratorMetadata,
   getContextMetaAnnotationReflectionParameterIndex,
+  getNonExcludedReflectionClassProperties,
   getParentMetaAnnotationReflectionParameterIndex,
   getTypeName,
   isAsyncIterable,
@@ -419,9 +420,13 @@ export class TypesBuilder {
 
     const resolver = this.getResolver(type);
 
+    const reflectionClassProperties =
+      getNonExcludedReflectionClassProperties(reflectionClass);
+
     return Object.fromEntries(
-      reflectionClass.getProperties().map(property => {
+      reflectionClassProperties.map(property => {
         let type = this.createOutputType(property.type);
+
         if (!property.isOptional() && !property.isNullable()) {
           type = new GraphQLNonNull(type);
         }
@@ -690,7 +695,9 @@ export class TypesBuilder {
       if (type === 'subscription') {
         if (result instanceof BrokerBusChannel) {
           const observable = new Observable(subscriber => {
-            result.subscribe((value: unknown) => subscriber.next(serializeResult(value)));
+            result.subscribe((value: unknown) =>
+              subscriber.next(serializeResult(value)),
+            );
           });
           return observableToAsyncIterable(observable);
         }

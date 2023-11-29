@@ -1,9 +1,13 @@
 import { AbstractClassType } from '@deepkit/core';
 import { BrokerBusChannel } from '@deepkit/broker';
+import { Observable } from 'rxjs';
 import {
   metaAnnotation,
+  ReflectionClass,
   ReflectionKind,
+  excludedAnnotation,
   ReflectionParameter,
+  ReflectionProperty,
   stringifyType,
   Type,
   TypeClass,
@@ -12,10 +16,13 @@ import {
   TypeUndefined,
 } from '@deepkit/type';
 
-import { UnknownTypeNameError } from './errors';
+import {
+  MissingResolverDecoratorError,
+  MissingTypeArgumentError,
+  UnknownTypeNameError,
+} from './errors';
 import { CONTEXT_META_NAME, PARENT_META_NAME } from './types';
 import { gqlClassDecorator, GraphQLClassMetadata } from './decorators';
-import { Observable } from 'rxjs';
 
 export function isAsyncIterable(obj: unknown): obj is AsyncIterable<unknown> {
   return obj != null && typeof obj === 'object' && Symbol.asyncIterator in obj;
@@ -99,48 +106,22 @@ export function excludeNullAndUndefinedTypes(
   ) as readonly Exclude<Type, TypeUndefined | TypeNull>[];
 }
 
+export function getTypeArgument(type: Type): Type {
+  const typeArgument = type.typeArguments?.[0];
+  if (!typeArgument) {
+    throw new MissingTypeArgumentError(type);
+  }
+  return typeArgument;
+}
+
 export function maybeUnwrapSubscriptionReturnType(type: Type): Type {
   switch (true) {
-    case type.typeName === 'Generator': {
-      const typeArgument = type.typeArguments?.[0];
-      if (!typeArgument) {
-        throw new Error('Missing type argument for Generator<T>');
-      }
-      return typeArgument;
-    }
-
-    case type.typeName === 'AsyncGenerator': {
-      const typeArgument = type.typeArguments?.[0];
-      if (!typeArgument) {
-        throw new Error('Missing type argument for AsyncGenerator<T>');
-      }
-      return typeArgument;
-    }
-
-    case type.typeName === 'AsyncIterable': {
-      const typeArgument = type.typeArguments?.[0];
-      if (!typeArgument) {
-        throw new Error('Missing type argument for AsyncIterable<T>');
-      }
-      return typeArgument;
-    }
-
-
-    case (type as TypeClass).classType === BrokerBusChannel: {
-      const typeArgument = type.typeArguments?.[0];
-      if (!typeArgument) {
-        throw new Error('Missing type argument for BrokerBusChannel<T>');
-      }
-      return typeArgument;
-    }
-
-    case ((type as TypeClass).classType === Observable): {
-      const typeArgument = type.typeArguments?.[0];
-      if (!typeArgument) {
-        throw new Error('Missing type argument for Observable<T>');
-      }
-      return typeArgument;
-    }
+    case type.typeName === 'Generator':
+    case type.typeName === 'AsyncGenerator':
+    case type.typeName === 'AsyncIterable':
+    case (type as TypeClass).classType === BrokerBusChannel:
+    case (type as TypeClass).classType === Observable:
+      return getTypeArgument(type);
 
     default:
       return type;
@@ -161,14 +142,23 @@ export function raise(error: string): never {
   throw new Error(error);
 }
 
+export function getNonExcludedReflectionClassProperties<T>(
+  reflectionClass: ReflectionClass<T>,
+): readonly ReflectionProperty[] {
+  return reflectionClass
+    .getProperties()
+    .filter(
+      property =>
+        !excludedAnnotation.isExcluded(property.type, property.type.typeName!),
+    );
+}
+
 export function getClassDecoratorMetadata<T>(
   classType: AbstractClassType<T>,
 ): GraphQLClassMetadata {
   const resolver = gqlClassDecorator._fetch(classType);
   if (!resolver) {
-    throw new Error(
-      `Missing @graphql.resolver() decorator on ${classType.name}`,
-    );
+    throw new MissingResolverDecoratorError(classType);
   }
   return resolver;
 }

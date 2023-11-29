@@ -1,6 +1,6 @@
-import { integer, typeOf } from '@deepkit/type';
+import { Excluded, integer, ReflectionClass, typeOf } from '@deepkit/type';
 
-import { getTypeName } from './utils';
+import { getNonExcludedReflectionClassProperties, getTypeName } from './utils';
 
 describe('getTypeName', () => {
   test('union', () => {
@@ -41,4 +41,23 @@ describe('getTypeName', () => {
       `"Test2deepkit"`,
     );
   });
+});
+
+test('getNonExcludedReflectionClassProperties', () => {
+  interface User {
+    readonly id: string;
+    readonly username: string;
+    readonly password: string & Excluded;
+  }
+
+  const reflectionClass = ReflectionClass.from<User>();
+
+  expect(
+    getNonExcludedReflectionClassProperties(reflectionClass).map(p => p.name),
+  ).toMatchInlineSnapshot(`
+    [
+      "id",
+      "username",
+    ]
+  `);
 });

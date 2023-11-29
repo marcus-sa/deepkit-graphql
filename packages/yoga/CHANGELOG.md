@@ -1,5 +1,7 @@
 
 
+## [0.2.2](https://github.com/marcus-sa/deepkit-graphql/compare/yoga-v0.2.1...yoga-v0.2.2) (2023-11-29)
+
 ## [0.2.1](https://github.com/marcus-sa/deepkit-graphql/compare/yoga-v0.2.0...yoga-v0.2.1) (2023-11-28)
 
 ## [0.2.0](https://github.com/marcus-sa/deepkit-graphql/compare/yoga-v0.1.2...yoga-v0.2.0) (2023-11-21)

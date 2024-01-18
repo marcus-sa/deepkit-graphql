@@ -642,7 +642,6 @@ export class TypesBuilder {
       );
 
     const deserializeArgs = deserializeFunction(
-      { loosely: false },
       serializer,
       undefined,
       argsType,
@@ -657,7 +656,6 @@ export class TypesBuilder {
     );
 
     const serializeResult = serializeFunction(
-      undefined,
       serializer,
       undefined,
       returnType,

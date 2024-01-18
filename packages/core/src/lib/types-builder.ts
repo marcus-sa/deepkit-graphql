@@ -662,7 +662,7 @@ export class TypesBuilder {
     );
 
     return async (parent, _args, context) => {
-      const args = deserializeArgs(_args) as Record<string, unknown>; // might return undefined ?
+      const args = deserializeArgs(_args, { loosely: false }) as Record<string, unknown>;
       const argsValidationErrors = validateArgs(args);
       if (argsValidationErrors.length) {
         const originalError = new ValidationError(argsValidationErrors);

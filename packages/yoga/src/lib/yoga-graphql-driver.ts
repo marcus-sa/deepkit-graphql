@@ -35,12 +35,8 @@ export class YogaDriver extends Driver {
 
   async start(schema: GraphQLSchema): Promise<void> {
     this.getOrCreateHttpServer();
-    const logging: any =
+    const logging =
       (this.config as YogaGraphQLServerOptions).logging || this.logger;
-    if (logging && this.logger) {
-      // @ts-ignore
-      logging.warn = this.logger.warning;
-    }
     this.server = createYoga({ schema, logging, ...this.config });
   }
 

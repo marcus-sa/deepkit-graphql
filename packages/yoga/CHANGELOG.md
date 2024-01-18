@@ -1,5 +1,12 @@
 
 
+## [0.2.4](https://github.com/marcus-sa/deepkit-graphql/compare/yoga-v0.2.3...yoga-v0.2.4) (2024-01-18)
+
+
+### Bug Fixes
+
+* **yoga:** logger ([d78f2a5](https://github.com/marcus-sa/deepkit-graphql/commit/d78f2a5e8892b9036f7785ae6151121374d57fd3))
+
 ## [0.2.3](https://github.com/marcus-sa/deepkit-graphql/compare/yoga-v0.2.2...yoga-v0.2.3) (2024-01-18)
 
 ## [0.2.2](https://github.com/marcus-sa/deepkit-graphql/compare/yoga-v0.2.1...yoga-v0.2.2) (2023-11-29)

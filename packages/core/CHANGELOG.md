@@ -1,5 +1,12 @@
 
 
+## [0.3.2](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.3.1...core-v0.3.2) (2024-01-18)
+
+
+### Bug Fixes
+
+* **core:** loosely deserialize args ([266dd9b](https://github.com/marcus-sa/deepkit-graphql/commit/266dd9bca8ae43eb0cb9b1e2a991083a8b3a7978))
+
 ## [0.3.1](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.3.0...core-v0.3.1) (2024-01-18)
 
 ## [0.3.0](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.2.1...core-v0.3.0) (2023-11-29)

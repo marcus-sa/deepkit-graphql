@@ -12,6 +12,7 @@ import {
 import { Resolvers } from './resolvers';
 import { TypesBuilder } from './types-builder';
 import { gqlClassDecorator } from './decorators';
+import { GraphQLContext } from './types';
 
 export interface SchemaBuilderOptions {
   readonly inputTypes?: readonly Type[];
@@ -56,10 +57,10 @@ export class SchemaBuilder {
 
   generateMutationResolverFields(): GraphQLFieldConfigMap<
     unknown,
-    InjectorContext
+    GraphQLContext
   > {
     return [...this.resolvers].reduce<
-      GraphQLFieldConfigMap<unknown, InjectorContext>
+      GraphQLFieldConfigMap<unknown, GraphQLContext>
     >(
       (fields, resolver) => ({
         // TODO: validate that fields don't override each other
@@ -72,10 +73,10 @@ export class SchemaBuilder {
 
   generateSubscriptionResolverFields(): GraphQLFieldConfigMap<
     unknown,
-    InjectorContext
+    GraphQLContext
   > {
     return [...this.resolvers].reduce<
-      GraphQLFieldConfigMap<unknown, InjectorContext>
+      GraphQLFieldConfigMap<unknown, GraphQLContext>
     >(
       (fields, resolver) => ({
         // TODO: validate that fields don't override each other
@@ -88,10 +89,10 @@ export class SchemaBuilder {
 
   generateQueryResolverFields(): GraphQLFieldConfigMap<
     unknown,
-    InjectorContext
+    GraphQLContext
   > {
     return [...this.resolvers].reduce<
-      GraphQLFieldConfigMap<unknown, InjectorContext>
+      GraphQLFieldConfigMap<unknown, GraphQLContext>
     >(
       (fields, resolver) => ({
         // TODO: validate that fields don't override each other

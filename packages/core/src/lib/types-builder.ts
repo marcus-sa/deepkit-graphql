@@ -44,7 +44,7 @@ import {
   GraphQLUnionType,
 } from 'graphql';
 
-import { Context, GraphQLFields, Instance, InternalMiddleware } from './types';
+import { Context, GraphQLContext, GraphQLFields, Instance, InternalMiddleware } from './types';
 import { typeResolvers } from './decorators';
 import { Resolver, Resolvers } from './resolvers';
 import { InvalidSubscriptionTypeError, TypeNameRequiredError } from './errors';
@@ -612,7 +612,7 @@ export class TypesBuilder {
     reflectionMethod: ReflectionMethod,
     middlewares: readonly InternalMiddleware[],
     type: 'query' | 'mutation' | 'subscription' | 'resolveField',
-  ): GraphQLFieldResolver<unknown, InjectorContext, any> {
+  ): GraphQLFieldResolver<unknown, GraphQLContext, any> {
     const resolve = (injectorContext: InjectorContext) => {
       const instance = injectorContext.get(
         resolver.controller,
@@ -670,7 +670,7 @@ export class TypesBuilder {
       returnType,
     );
 
-    return async (parent, _args, injectorContext) => {
+    return async (parent, _args, { injectorContext }: GraphQLContext) => {
       const args = deserializeArgs(_args, { loosely: false }) as Record<string, unknown>;
       const argsValidationErrors = validateArgs(args);
       if (argsValidationErrors.length) {
@@ -734,14 +734,14 @@ export class TypesBuilder {
 
   generateSubscriptionResolverFields<T>(
     resolver: Resolver<T>,
-  ): GraphQLFieldConfigMap<unknown, InjectorContext> {
+  ): GraphQLFieldConfigMap<unknown, GraphQLContext> {
     const metadata = getClassDecoratorMetadata(resolver.controller);
     const resolverType = reflect(resolver.controller);
     const reflectionClass = ReflectionClass.from(resolverType);
 
     const fields = new Map<
       string,
-      GraphQLFieldConfig<unknown, InjectorContext>
+      GraphQLFieldConfig<unknown, GraphQLContext>
     >();
 
     // eslint-disable-next-line functional/no-loop-statement
@@ -775,14 +775,14 @@ export class TypesBuilder {
 
   generateMutationResolverFields<T>(
     resolver: Resolver<T>,
-  ): GraphQLFieldConfigMap<unknown, InjectorContext> {
+  ): GraphQLFieldConfigMap<unknown, GraphQLContext> {
     const metadata = getClassDecoratorMetadata(resolver.controller);
     const resolverType = reflect(resolver.controller);
     const reflectionClass = ReflectionClass.from(resolverType);
 
     const fields = new Map<
       string,
-      GraphQLFieldConfig<unknown, InjectorContext>
+      GraphQLFieldConfig<unknown, GraphQLContext>
     >();
 
     // eslint-disable-next-line functional/no-loop-statement
@@ -817,7 +817,7 @@ export class TypesBuilder {
   generateFieldResolver<T>(
     resolver: Resolver<T>,
     fieldName: string,
-  ): Pick<GraphQLFieldConfig<unknown, InjectorContext>, 'args' | 'resolve'> {
+  ): Pick<GraphQLFieldConfig<unknown, GraphQLContext>, 'args' | 'resolve'> {
     const metadata = getClassDecoratorMetadata(resolver.controller);
     const resolverType = reflect(resolver.controller);
     const reflectionClass = ReflectionClass.from(resolverType);
@@ -852,14 +852,14 @@ export class TypesBuilder {
 
   generateQueryResolverFields<T>(
     resolver: Resolver<T>,
-  ): GraphQLFieldConfigMap<unknown, InjectorContext> {
+  ): GraphQLFieldConfigMap<unknown, GraphQLContext> {
     const metadata = getClassDecoratorMetadata(resolver.controller);
     const resolverType = reflect(resolver.controller);
     const reflectionClass = ReflectionClass.from(resolverType);
 
     const fields = new Map<
       string,
-      GraphQLFieldConfig<unknown, InjectorContext>
+      GraphQLFieldConfig<unknown, GraphQLContext>
     >();
 
     // eslint-disable-next-line functional/no-loop-statement

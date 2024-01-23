@@ -1,5 +1,6 @@
 import { ClassType, AbstractClassType } from '@deepkit/core';
 import { TypeAnnotation } from '@deepkit/type';
+import { InjectorContext } from '@deepkit/injector';
 
 export type GraphQLFields<T> = Record<string, { readonly type: T }>;
 
@@ -29,3 +30,7 @@ export type GraphQLMiddlewareFn = (
 export type InternalMiddleware =
   | ClassType<GraphQLMiddleware>
   | GraphQLMiddlewareFn;
+
+export interface GraphQLContext {
+  readonly injectorContext: InjectorContext;
+}

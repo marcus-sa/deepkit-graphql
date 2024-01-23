@@ -5,7 +5,7 @@ import { InjectorContext } from '@deepkit/injector';
 import { GraphQLSchema } from 'graphql';
 import { WebWorkerFactory, ApplicationServer } from '@deepkit/framework';
 import { HttpBadRequestError, httpWorkflow } from '@deepkit/http';
-import { Driver } from '@deepkit-graphql/core';
+import { Driver, GraphQLContext } from '@deepkit-graphql/core';
 
 import { ApolloGraphQLConfig } from './apollo-graphql-config';
 import { ApolloServerPlugins } from './plugins';
@@ -53,7 +53,7 @@ export class ApolloDriver extends Driver {
 
     const response = await this.server!.executeHTTPGraphQLRequest({
       httpGraphQLRequest,
-      context: async () => injectorContext,
+      context: async (): Promise<GraphQLContext> => ({ injectorContext }),
     });
     if (!response) {
       throw new HttpBadRequestError(JSON.stringify(httpGraphQLRequest));

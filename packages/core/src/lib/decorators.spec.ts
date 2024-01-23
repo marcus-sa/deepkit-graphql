@@ -79,7 +79,7 @@ test('middleware errors', async () => {
 
   await executeGraphQL({
     schema,
-    contextValue: injectorContext,
+    contextValue: { injectorContext },
     source: `{ get }`,
   });
 
@@ -124,7 +124,7 @@ test('resolver middleware is invoked', async () => {
 
   await executeGraphQL({
     schema,
-    contextValue: injectorContext,
+    contextValue: { injectorContext },
     source: `{ get }`,
   });
 
@@ -169,7 +169,7 @@ test('query middleware is invoked', async () => {
 
   await executeGraphQL({
     schema,
-    contextValue: injectorContext,
+    contextValue: { injectorContext },
     source: `{ get }`,
   });
 
@@ -214,7 +214,7 @@ test('mutation middleware is invoked', async () => {
 
   await executeGraphQL({
     schema,
-    contextValue: injectorContext,
+    contextValue: { injectorContext },
     source: `mutation { create }`,
   });
 
@@ -259,7 +259,7 @@ test('subscription middleware is invoked', async () => {
 
   await executeGraphQL({
     schema,
-    contextValue: injectorContext,
+    contextValue: { injectorContext },
     source: `subscription { create }`,
   });
 
@@ -298,7 +298,7 @@ test('mutation', async () => {
   await expect(
     executeGraphQL({
       schema,
-      contextValue: injectorContext,
+      contextValue: { injectorContext },
       source: `mutation { createUser(data: { username: "Test" }) { id } }`,
     }),
   ).resolves.toMatchSnapshot();
@@ -329,7 +329,7 @@ test('query', async () => {
   await expect(
     executeGraphQL({
       schema,
-      contextValue: injectorContext,
+      contextValue: { injectorContext },
       source: `{ getUser(id: 1) { id } }`,
       rootValue: {},
     }),
@@ -364,7 +364,7 @@ test('mutation args validation', async () => {
 
   await expect(
     executeGraphQL({
-      contextValue: injectorContext,
+      contextValue: { injectorContext },
       source: `mutation { createUser(data: { username: "Test" }) { username } }`,
       schema,
     }),
@@ -403,7 +403,7 @@ test.skip('Context', async () => {
 
   await expect(
     executeGraphQL({
-      contextValue: injectorContext,
+      contextValue: { injectorContext },
       source: `
         {
           info {
@@ -468,7 +468,7 @@ describe('resolveField', () => {
     await expect(
       executeGraphQL({
         schema,
-        contextValue: injectorContext,
+        contextValue: { injectorContext },
         source: `
           {
             getUser(id: "9f617521-b9c2-4ab9-a339-3c551c799027") {
@@ -529,7 +529,7 @@ describe('resolveField', () => {
 
     await expect(
       executeGraphQL({
-        contextValue: injectorContext,
+        contextValue: { injectorContext },
         source: `
           {
             getUser(id: "398cdf36-e3ac-475c-90aa-c70f99add874") {

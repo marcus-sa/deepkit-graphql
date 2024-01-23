@@ -48,7 +48,7 @@ import {
 } from 'graphql';
 
 import { TypesBuilder } from './types-builder';
-import { ID } from './types';
+import { GraphQLContext, ID } from './types';
 import { Resolver, Resolvers } from './resolvers';
 import { isAsyncIterable } from './utils';
 import { InvalidSubscriptionTypeError } from './errors';
@@ -89,7 +89,7 @@ describe('TypesBuilder', () => {
         const asyncIterable: AsyncIterable<unknown> = await resolve(
           undefined,
           {},
-          injectorContext,
+          <GraphQLContext>{ injectorContext },
         );
 
         expect(isAsyncIterable(asyncIterable)).toBe(true);
@@ -126,7 +126,7 @@ describe('TypesBuilder', () => {
         const asyncIterable: AsyncIterable<unknown> = await resolve(
           undefined,
           {},
-          injectorContext,
+          <GraphQLContext>{ injectorContext },
         );
 
         expect(isAsyncIterable(asyncIterable)).toBe(true);
@@ -174,7 +174,7 @@ describe('TypesBuilder', () => {
         const asyncIterable: AsyncIterable<unknown> = await resolve(
           undefined,
           {},
-          injectorContext,
+          <GraphQLContext>{ injectorContext },
         );
 
         expect(isAsyncIterable(asyncIterable)).toBe(true);
@@ -217,7 +217,7 @@ describe('TypesBuilder', () => {
         const asyncIterable: AsyncIterable<unknown> = await resolve(
           undefined,
           {},
-          injectorContext,
+          <GraphQLContext>{ injectorContext },
         );
 
         expect(isAsyncIterable(asyncIterable)).toBe(true);

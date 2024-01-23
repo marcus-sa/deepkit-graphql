@@ -1,5 +1,12 @@
 
 
+## [0.4.0](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.3.4...core-v0.4.0) (2024-01-23)
+
+
+### Features
+
+* **core:** make driver optional in module ([4d10ef3](https://github.com/marcus-sa/deepkit-graphql/commit/4d10ef36f0a6dd9d716ee1debeedb0a1b0f44da5))
+
 ## [0.3.4](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.3.3...core-v0.3.4) (2024-01-23)
 
 ## [0.3.3](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.3.2...core-v0.3.3) (2024-01-23)

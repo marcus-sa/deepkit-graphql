@@ -1,4 +1,4 @@
-import { asyncOperation, isClass } from '@deepkit/core';
+import { asyncOperation, ClassType, isClass } from '@deepkit/core';
 import { InjectorContext } from '@deepkit/injector';
 import { BrokerBusChannel } from '@deepkit/broker';
 import { map, Observable } from 'rxjs';
@@ -46,7 +46,7 @@ import {
 
 import { Context, GraphQLFields, Instance, InternalMiddleware } from './types';
 import { typeResolvers } from './decorators';
-import { Resolvers } from './resolvers';
+import { Resolver, Resolvers } from './resolvers';
 import { InvalidSubscriptionTypeError, TypeNameRequiredError } from './errors';
 import {
   BigInt,
@@ -72,7 +72,6 @@ import {
   excludeNullAndUndefinedTypes,
   filterReflectionParametersMetaAnnotationsForArguments,
   getClassDecoratorMetadata,
-  getContextMetaAnnotationReflectionParameterIndex,
   getNonExcludedReflectionClassProperties,
   getParentMetaAnnotationReflectionParameterIndex,
   getTypeName,
@@ -407,10 +406,14 @@ export class TypesBuilder {
     }
   }
 
-  getResolver(type: TypeClass | TypeObjectLiteral): Instance | undefined {
+  getResolver<T>(type: TypeClass | TypeObjectLiteral): Resolver<T> | undefined {
     const typeName = requireTypeName(type);
-    const resolverClassType = typeResolvers.get(typeName);
-    return resolverClassType && this.resolvers?.get(resolverClassType);
+    const controllerClassType = typeResolvers.get(typeName);
+    return controllerClassType
+      ? ([...this.resolvers].find(
+          resolver => resolver.controller === controllerClassType,
+        ) as Resolver<T>)
+      : undefined;
   }
 
   createOutputFields(
@@ -564,16 +567,16 @@ export class TypesBuilder {
 
   private async executeMiddleware(
     middlewares: readonly InternalMiddleware[],
-    context: Context<unknown>,
+    injectorContext: InjectorContext,
   ): Promise<void> {
     for (const middleware of middlewares) {
       await asyncOperation<void>(async (resolve, reject) => {
         const next = (err?: Error) => (err ? reject(err) : resolve());
 
         if (isClass(middleware)) {
-          await this.injectorContext.get(middleware).execute(context, next);
+          await injectorContext.get(middleware).execute(next);
         } else {
-          await middleware(context, next);
+          await middleware(next);
         }
       });
     }
@@ -581,7 +584,7 @@ export class TypesBuilder {
 
   // TODO: move return type resolution and validation into decorators
   private getSerializableResolveFunctionReturnType<T>(
-    resolver: Instance<T>,
+    resolver: Resolver<T>,
     reflectionMethod: ReflectionMethod,
     type: 'query' | 'mutation' | 'subscription' | 'resolveField',
   ): Type {
@@ -600,19 +603,25 @@ export class TypesBuilder {
     throw new InvalidSubscriptionTypeError(
       returnType,
       reflectionMethod.name,
-      resolver.constructor.name,
+      resolver.controller.name,
     );
   }
 
-  private createResolveFunction<Resolver, Args extends unknown[] = []>(
-    resolver: Instance<Resolver>,
+  private createResolveFunction<T, Args extends unknown[] = []>(
+    resolver: Resolver<T>,
     reflectionMethod: ReflectionMethod,
     middlewares: readonly InternalMiddleware[],
     type: 'query' | 'mutation' | 'subscription' | 'resolveField',
-  ): GraphQLFieldResolver<unknown, unknown, any> {
-    const resolve = (
-      resolver[reflectionMethod.name as keyof Resolver] as Function
-    ).bind(resolver) as (...args: Args) => unknown;
+  ): GraphQLFieldResolver<unknown, InjectorContext, any> {
+    const resolve = (injectorContext: InjectorContext) => {
+      const instance = injectorContext.get(
+        resolver.controller,
+        resolver.module,
+      );
+      return (
+        instance[reflectionMethod.name as keyof typeof instance] as Function
+      ).bind(instance);
+    };
 
     const argsParameters =
       filterReflectionParametersMetaAnnotationsForArguments(
@@ -636,10 +645,10 @@ export class TypesBuilder {
         reflectionMethod.parameters,
       );
 
-    const contextParameterIndex =
-      getContextMetaAnnotationReflectionParameterIndex(
-        reflectionMethod.parameters,
-      );
+    // const contextParameterIndex =
+    //   getContextMetaAnnotationReflectionParameterIndex(
+    //     reflectionMethod.parameters,
+    //   );
 
     const deserializeArgs = deserializeFunction(
       serializer,
@@ -661,7 +670,7 @@ export class TypesBuilder {
       returnType,
     );
 
-    return async (parent, _args, context) => {
+    return async (parent, _args, injectorContext) => {
       const args = deserializeArgs(_args, { loosely: false }) as Record<string, unknown>;
       const argsValidationErrors = validateArgs(args);
       if (argsValidationErrors.length) {
@@ -672,23 +681,23 @@ export class TypesBuilder {
         });
       }
 
-      await this.executeMiddleware(middlewares, context as Context<unknown>);
+      await this.executeMiddleware(middlewares, injectorContext);
 
       const resolveArgs = argsParameters.map(
         parameter => args[parameter.name],
-      ) as Parameters<typeof resolve>;
+      ) as Parameters<ReturnType<typeof resolve>>;
 
       if (parentParameterIndex !== -1) {
         // eslint-disable-next-line functional/immutable-data
         resolveArgs.splice(parentParameterIndex, 0, parent);
       }
 
-      if (contextParameterIndex !== -1) {
+      /*if (contextParameterIndex !== -1) {
         // eslint-disable-next-line functional/immutable-data
         resolveArgs.splice(contextParameterIndex, 0, context);
-      }
+      }*/
 
-      const result = await resolve(...resolveArgs);
+      const result = await resolve(injectorContext)(...resolveArgs);
 
       if (type === 'subscription') {
         if (result instanceof BrokerBusChannel) {
@@ -710,7 +719,7 @@ export class TypesBuilder {
           throw new InvalidSubscriptionTypeError(
             reflect(result),
             reflectionMethod.name,
-            resolver.constructor.name,
+            resolver.controller.name,
           );
         }
 
@@ -724,16 +733,19 @@ export class TypesBuilder {
   }
 
   generateSubscriptionResolverFields<T>(
-    instance: Instance<T>,
-  ): GraphQLFieldConfigMap<unknown, unknown> {
-    const resolver = getClassDecoratorMetadata(instance.constructor);
-    const resolverType = reflect(instance.constructor);
+    resolver: Resolver<T>,
+  ): GraphQLFieldConfigMap<unknown, InjectorContext> {
+    const metadata = getClassDecoratorMetadata(resolver.controller);
+    const resolverType = reflect(resolver.controller);
     const reflectionClass = ReflectionClass.from(resolverType);
 
-    const fields = new Map<string, GraphQLFieldConfig<unknown, unknown>>();
+    const fields = new Map<
+      string,
+      GraphQLFieldConfig<unknown, InjectorContext>
+    >();
 
     // eslint-disable-next-line functional/no-loop-statement
-    for (const [methodName, subscription] of resolver.subscriptions.entries()) {
+    for (const [methodName, subscription] of metadata.subscriptions.entries()) {
       const reflectionMethod = reflectionClass.getMethod(methodName);
 
       const args = this.createInputArgsFromReflectionParameters(
@@ -743,9 +755,9 @@ export class TypesBuilder {
       const returnType = this.createReturnType(reflectionMethod.type.return);
 
       const resolve = this.createResolveFunction<T>(
-        instance,
+        resolver,
         reflectionMethod,
-        [...resolver.middleware, ...subscription.middleware],
+        [...metadata.middleware, ...subscription.middleware],
         'subscription',
       );
 
@@ -762,16 +774,19 @@ export class TypesBuilder {
   }
 
   generateMutationResolverFields<T>(
-    instance: Instance<T>,
-  ): GraphQLFieldConfigMap<unknown, unknown> {
-    const resolver = getClassDecoratorMetadata(instance.constructor);
-    const resolverType = reflect(instance.constructor);
+    resolver: Resolver<T>,
+  ): GraphQLFieldConfigMap<unknown, InjectorContext> {
+    const metadata = getClassDecoratorMetadata(resolver.controller);
+    const resolverType = reflect(resolver.controller);
     const reflectionClass = ReflectionClass.from(resolverType);
 
-    const fields = new Map<string, GraphQLFieldConfig<unknown, unknown>>();
+    const fields = new Map<
+      string,
+      GraphQLFieldConfig<unknown, InjectorContext>
+    >();
 
     // eslint-disable-next-line functional/no-loop-statement
-    for (const [methodName, mutation] of resolver.mutations.entries()) {
+    for (const [methodName, mutation] of metadata.mutations.entries()) {
       const reflectionMethod = reflectionClass.getMethod(methodName);
 
       const args = this.createInputArgsFromReflectionParameters(
@@ -781,9 +796,9 @@ export class TypesBuilder {
       const returnType = this.createReturnType(reflectionMethod.type.return);
 
       const resolve = this.createResolveFunction<T>(
-        instance,
+        resolver,
         reflectionMethod,
-        [...resolver.middleware, ...mutation.middleware],
+        [...metadata.middleware, ...mutation.middleware],
         'mutation',
       );
 
@@ -800,14 +815,14 @@ export class TypesBuilder {
   }
 
   generateFieldResolver<T>(
-    instance: Instance<T>,
+    resolver: Resolver<T>,
     fieldName: string,
-  ): Pick<GraphQLFieldConfig<unknown, unknown>, 'args' | 'resolve'> {
-    const resolver = getClassDecoratorMetadata(instance.constructor);
-    const resolverType = reflect(instance.constructor);
+  ): Pick<GraphQLFieldConfig<unknown, InjectorContext>, 'args' | 'resolve'> {
+    const metadata = getClassDecoratorMetadata(resolver.controller);
+    const resolverType = reflect(resolver.controller);
     const reflectionClass = ReflectionClass.from(resolverType);
 
-    const field = [...resolver.resolveFields.values()].find(
+    const field = [...metadata.resolveFields.values()].find(
       field => field.name === fieldName,
     );
     if (!field) {
@@ -817,9 +832,9 @@ export class TypesBuilder {
     const reflectionMethod = reflectionClass.getMethod(field.property);
 
     const resolve = this.createResolveFunction<T>(
-      instance,
+      resolver,
       reflectionMethod,
-      [...resolver.middleware, ...field.middleware],
+      [...metadata.middleware, ...field.middleware],
       'resolveField',
     );
 
@@ -836,16 +851,19 @@ export class TypesBuilder {
   }
 
   generateQueryResolverFields<T>(
-    instance: Instance<T>,
-  ): GraphQLFieldConfigMap<unknown, unknown> {
-    const resolver = getClassDecoratorMetadata(instance.constructor);
-    const resolverType = reflect(instance.constructor);
+    resolver: Resolver<T>,
+  ): GraphQLFieldConfigMap<unknown, InjectorContext> {
+    const metadata = getClassDecoratorMetadata(resolver.controller);
+    const resolverType = reflect(resolver.controller);
     const reflectionClass = ReflectionClass.from(resolverType);
 
-    const fields = new Map<string, GraphQLFieldConfig<unknown, unknown>>();
+    const fields = new Map<
+      string,
+      GraphQLFieldConfig<unknown, InjectorContext>
+    >();
 
     // eslint-disable-next-line functional/no-loop-statement
-    for (const [methodName, query] of resolver.queries.entries()) {
+    for (const [methodName, query] of metadata.queries.entries()) {
       const reflectionMethod = reflectionClass.getMethod(methodName);
 
       const args = this.createInputArgsFromReflectionParameters(
@@ -855,9 +873,9 @@ export class TypesBuilder {
       const returnType = this.createReturnType(reflectionMethod.type.return);
 
       const resolve = this.createResolveFunction<T>(
-        instance,
+        resolver,
         reflectionMethod,
-        [...resolver.middleware, ...query.middleware],
+        [...metadata.middleware, ...query.middleware],
         'query',
       );
 
@@ -873,9 +891,9 @@ export class TypesBuilder {
     return Object.fromEntries(fields.entries());
   }
 
-  hasFieldResolver<T>(instance: Instance<T>, fieldName: string): boolean {
-    const resolver = getClassDecoratorMetadata(instance.constructor);
-    return [...resolver.resolveFields.values()].some(
+  hasFieldResolver<T>(resolver: Resolver<T>, fieldName: string): boolean {
+    const metadata = getClassDecoratorMetadata(resolver.controller);
+    return [...metadata.resolveFields.values()].some(
       field => field.name === fieldName,
     );
   }

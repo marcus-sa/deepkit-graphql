@@ -49,7 +49,7 @@ import {
 
 import { TypesBuilder } from './types-builder';
 import { ID } from './types';
-import { Resolvers } from './resolvers';
+import { Resolver, Resolvers } from './resolvers';
 import { isAsyncIterable } from './utils';
 import { InvalidSubscriptionTypeError } from './errors';
 
@@ -66,15 +66,17 @@ describe('TypesBuilder', () => {
   describe('createResolveFunction', () => {
     describe('given subscription', () => {
       it('works with Observable', async () => {
-        class Resolver {
+        class TestResolver {
           async subscribe(): Promise<Observable<string>> {
             return new BehaviorSubject('Observable');
           }
         }
 
-        const resolver = new Resolver();
+        const injectorContext = InjectorContext.forProviders([TestResolver]);
 
-        const reflectionClass = ReflectionClass.from<Resolver>();
+        const resolver = { controller: TestResolver };
+
+        const reflectionClass = ReflectionClass.from<TestResolver>();
         const reflectionMethod = reflectionClass.getMethod('subscribe');
 
         const resolve = (builder as TypesBuilder & any).createResolveFunction(
@@ -87,6 +89,7 @@ describe('TypesBuilder', () => {
         const asyncIterable: AsyncIterable<unknown> = await resolve(
           undefined,
           {},
+          injectorContext,
         );
 
         expect(isAsyncIterable(asyncIterable)).toBe(true);
@@ -100,15 +103,17 @@ describe('TypesBuilder', () => {
       });
 
       it('works with AsyncGenerator', async () => {
-        class Resolver {
+        class TestResolver {
           async *subscribe(): AsyncGenerator<string> {
             yield 'AsyncGenerator';
           }
         }
 
-        const resolver = new Resolver();
+        const injectorContext = InjectorContext.forProviders([TestResolver]);
 
-        const reflectionClass = ReflectionClass.from<Resolver>();
+        const resolver = { controller: TestResolver };
+
+        const reflectionClass = ReflectionClass.from<TestResolver>();
         const reflectionMethod = reflectionClass.getMethod('subscribe');
 
         const resolve = (builder as TypesBuilder & any).createResolveFunction(
@@ -121,6 +126,7 @@ describe('TypesBuilder', () => {
         const asyncIterable: AsyncIterable<unknown> = await resolve(
           undefined,
           {},
+          injectorContext,
         );
 
         expect(isAsyncIterable(asyncIterable)).toBe(true);
@@ -134,7 +140,7 @@ describe('TypesBuilder', () => {
       });
 
       it('works with AsyncIterable', async () => {
-        class Resolver {
+        class TestResolver {
           subscribe(): AsyncIterable<string> {
             return {
               [Symbol.asyncIterator]() {
@@ -151,9 +157,11 @@ describe('TypesBuilder', () => {
           }
         }
 
-        const resolver = new Resolver();
+        const injectorContext = InjectorContext.forProviders([TestResolver]);
 
-        const reflectionClass = ReflectionClass.from<Resolver>();
+        const resolver = { controller: TestResolver };
+
+        const reflectionClass = ReflectionClass.from<TestResolver>();
         const reflectionMethod = reflectionClass.getMethod('subscribe');
 
         const resolve = (builder as TypesBuilder & any).createResolveFunction(
@@ -166,6 +174,7 @@ describe('TypesBuilder', () => {
         const asyncIterable: AsyncIterable<unknown> = await resolve(
           undefined,
           {},
+          injectorContext,
         );
 
         expect(isAsyncIterable(asyncIterable)).toBe(true);
@@ -185,15 +194,17 @@ describe('TypesBuilder', () => {
 
         const channel = broker.channel<UserEvents>('user-events');
 
-        class Resolver {
+        class TestResolver {
           subscribe(): BrokerBusChannel<UserEvents> {
             return channel;
           }
         }
 
-        const resolver = new Resolver();
+        const injectorContext = InjectorContext.forProviders([TestResolver]);
 
-        const reflectionClass = ReflectionClass.from<Resolver>();
+        const resolver = { controller: TestResolver };
+
+        const reflectionClass = ReflectionClass.from<TestResolver>();
         const reflectionMethod = reflectionClass.getMethod('subscribe');
 
         const resolve = (builder as TypesBuilder & any).createResolveFunction(
@@ -206,6 +217,7 @@ describe('TypesBuilder', () => {
         const asyncIterable: AsyncIterable<unknown> = await resolve(
           undefined,
           {},
+          injectorContext,
         );
 
         expect(isAsyncIterable(asyncIterable)).toBe(true);
@@ -223,13 +235,13 @@ describe('TypesBuilder', () => {
       });
 
       it('throws an error when return type of method is incorrect', () => {
-        class Resolver {
+        class TestResolver {
           subscribe() {}
         }
 
-        const resolver = new Resolver();
+        const resolver = { controller: TestResolver };
 
-        const reflectionClass = ReflectionClass.from<Resolver>();
+        const reflectionClass = ReflectionClass.from<TestResolver>();
         const reflectionMethod = reflectionClass.getMethod('subscribe');
 
         expect(() =>

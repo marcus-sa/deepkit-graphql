@@ -1,8 +1,9 @@
 import { GraphQLSchema } from 'graphql';
 import { WebWorkerFactory, ApplicationServer } from '@deepkit/framework';
 import { httpWorkflow } from '@deepkit/http';
-import { Driver, GraphQLHttpContext } from '@deepkit-graphql/core';
+import { Driver } from '@deepkit-graphql/core';
 import { createYoga, YogaServerInstance } from 'graphql-yoga';
+import { InjectorContext } from '@deepkit/injector';
 import { Logger } from '@deepkit/logger';
 
 import {
@@ -22,15 +23,13 @@ export class YogaDriver extends Driver {
     super(appServer, webWorkerFactory);
   }
 
-  async onRequest(event: typeof httpWorkflow.onRequest.event): Promise<void> {
+  async onRequest(
+    event: typeof httpWorkflow.onRequest.event,
+    injectorContext: InjectorContext,
+  ): Promise<void> {
     if (!event.request.method || !this.server) return;
 
-    const context: GraphQLHttpContext = {
-      request: event.request,
-      response: event.response,
-    };
-
-    await this.server.handle(event.request, event.response, context);
+    await this.server.handle(event.request, event.response, injectorContext);
   }
 
   async start(schema: GraphQLSchema): Promise<void> {

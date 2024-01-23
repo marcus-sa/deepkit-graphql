@@ -1,4 +1,5 @@
 import { GraphQLSchema } from 'graphql';
+import { InjectorContext } from '@deepkit/injector';
 import {
   ApplicationServer,
   WebWorker,
@@ -15,7 +16,10 @@ export abstract class Driver {
 
   // ReferenceError: http_1 is not defined
   // async onRequest(event: typeof httpWorkflow.onRequest.event): Promise<void> {}
-  abstract onRequest(event: any): Promise<void>;
+  abstract onRequest(
+    event: any,
+    injectorContext: InjectorContext,
+  ): Promise<void>;
 
   abstract start(schema: GraphQLSchema): Promise<void>;
 

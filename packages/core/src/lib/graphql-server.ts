@@ -1,38 +1,28 @@
 import { InjectorContext } from '@deepkit/injector';
 import { eventDispatcher } from '@deepkit/event';
-import { httpWorkflow } from '@deepkit/http';
+import { HttpRequest, HttpResponse, httpWorkflow } from '@deepkit/http';
 import {
   onServerMainBootstrapDone,
   onServerMainShutdown,
 } from '@deepkit/framework';
 
 import { Driver } from './driver';
-import { DeepkitGraphQLResolvers, Resolvers } from './resolvers';
+import { Resolvers } from './resolvers';
 import { SchemaBuilder } from './schema-builder';
 
 export class GraphQLServer {
-  private readonly injectorContext: InjectorContext;
-
   constructor(
-    private readonly resolvers: DeepkitGraphQLResolvers,
+    private readonly resolvers: Resolvers,
     private readonly driver: Driver,
-    injectorContext: InjectorContext,
-  ) {
-    this.injectorContext = injectorContext.createChildScope('graphql');
-  }
-
-  private createResolvers(): Resolvers {
-    return new Resolvers(
-      [...this.resolvers.values()].map(({ controller, module }) =>
-        this.injectorContext.get(controller, module),
-      ),
-    );
-  }
+    private readonly injectorContext: InjectorContext,
+  ) {}
 
   @eventDispatcher.listen(onServerMainBootstrapDone)
   async onServerMainBootstrapDone(): Promise<void> {
-    const resolvers = this.createResolvers();
-    const schemaBuilder = new SchemaBuilder(resolvers, this.injectorContext);
+    const schemaBuilder = new SchemaBuilder(
+      this.resolvers,
+      this.injectorContext,
+    );
     const schema = schemaBuilder.build();
     await this.driver.start(schema);
   }
@@ -44,6 +34,11 @@ export class GraphQLServer {
 
   @eventDispatcher.listen(httpWorkflow.onRequest)
   async onRequest(event: typeof httpWorkflow.onRequest.event): Promise<void> {
-    await this.driver.onRequest(event);
+    const injectorContext = this.injectorContext.createChildScope('graphql');
+    injectorContext.set(InjectorContext, injectorContext);
+    injectorContext.set(HttpRequest, event.request);
+    injectorContext.set(HttpResponse, event.response);
+
+    await this.driver.onRequest(event, injectorContext);
   }
 }

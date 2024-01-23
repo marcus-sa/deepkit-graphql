@@ -1,10 +1,6 @@
 import { ReceiveType, resolveReceiveType, Type } from '@deepkit/type';
 import { ClassType } from '@deepkit/core';
-import {
-  InjectorContext,
-  InjectorInterface,
-  InjectorModule,
-} from '@deepkit/injector';
+import { InjectorContext, InjectorModule } from '@deepkit/injector';
 import {
   GraphQLFieldConfigMap,
   GraphQLNamedType,
@@ -58,14 +54,17 @@ export class SchemaBuilder {
     );
   }
 
-  generateMutationResolverFields(): GraphQLFieldConfigMap<unknown, unknown> {
-    return [...this.resolvers.instances].reduce<
-      GraphQLFieldConfigMap<unknown, unknown>
+  generateMutationResolverFields(): GraphQLFieldConfigMap<
+    unknown,
+    InjectorContext
+  > {
+    return [...this.resolvers].reduce<
+      GraphQLFieldConfigMap<unknown, InjectorContext>
     >(
-      (fields, instance) => ({
+      (fields, resolver) => ({
         // TODO: validate that fields don't override each other
         ...fields,
-        ...this.typesBuilder.generateMutationResolverFields(instance),
+        ...this.typesBuilder.generateMutationResolverFields(resolver),
       }),
       {},
     );
@@ -73,28 +72,31 @@ export class SchemaBuilder {
 
   generateSubscriptionResolverFields(): GraphQLFieldConfigMap<
     unknown,
-    unknown
+    InjectorContext
   > {
-    return [...this.resolvers.instances].reduce<
-      GraphQLFieldConfigMap<unknown, unknown>
+    return [...this.resolvers].reduce<
+      GraphQLFieldConfigMap<unknown, InjectorContext>
     >(
-      (fields, instance) => ({
+      (fields, resolver) => ({
         // TODO: validate that fields don't override each other
         ...fields,
-        ...this.typesBuilder.generateSubscriptionResolverFields(instance),
+        ...this.typesBuilder.generateSubscriptionResolverFields(resolver),
       }),
       {},
     );
   }
 
-  generateQueryResolverFields(): GraphQLFieldConfigMap<unknown, unknown> {
-    return [...this.resolvers.instances].reduce<
-      GraphQLFieldConfigMap<unknown, unknown>
+  generateQueryResolverFields(): GraphQLFieldConfigMap<
+    unknown,
+    InjectorContext
+  > {
+    return [...this.resolvers].reduce<
+      GraphQLFieldConfigMap<unknown, InjectorContext>
     >(
-      (fields, instance) => ({
+      (fields, resolver) => ({
         // TODO: validate that fields don't override each other
         ...fields,
-        ...this.typesBuilder.generateQueryResolverFields(instance),
+        ...this.typesBuilder.generateQueryResolverFields(resolver),
       }),
       {},
     );
@@ -121,10 +123,10 @@ export class SchemaBuilder {
   }
 
   private buildRootMutationType(): GraphQLObjectType | undefined {
-    const classTypes = [...this.resolvers.classTypes];
+    const resolvers = [...this.resolvers];
 
-    const someMutations = classTypes.some(classType =>
-      this.hasMutationResolvers(classType),
+    const someMutations = resolvers.some(resolver =>
+      this.hasMutationResolvers(resolver.controller),
     );
     if (!someMutations) return;
 
@@ -135,10 +137,10 @@ export class SchemaBuilder {
   }
 
   private buildRootSubscriptionType(): GraphQLObjectType | undefined {
-    const classTypes = [...this.resolvers.classTypes];
+    const resolvers = [...this.resolvers];
 
-    const someSubscriptions = classTypes.some(classType =>
-      this.hasSubscriptionResolvers(classType),
+    const someSubscriptions = resolvers.some(resolver =>
+      this.hasSubscriptionResolvers(resolver.controller),
     );
     if (!someSubscriptions) return;
 
@@ -149,10 +151,10 @@ export class SchemaBuilder {
   }
 
   private buildRootQueryType(): GraphQLObjectType | undefined {
-    const classTypes = [...this.resolvers.classTypes];
+    const resolvers = [...this.resolvers];
 
-    const someQueries = classTypes.some(classType =>
-      this.hasQueryResolvers(classType),
+    const someQueries = resolvers.some(resolver =>
+      this.hasQueryResolvers(resolver.controller),
     );
     if (!someQueries) {
       return new GraphQLObjectType({

@@ -4,15 +4,15 @@ import { ReceiveType, resolveReceiveType } from '@deepkit/type';
 import { ClassType } from '@deepkit/core';
 
 import { gqlClassDecorator } from './decorators';
-import { DeepkitGraphQLResolvers } from './resolvers';
 import { GraphQLServer } from './graphql-server';
 import { Driver } from './driver';
+import { Resolvers } from './resolvers';
 
 export class GraphQLModule extends createModule({
   listeners: [GraphQLServer],
   forRoot: true,
 }) {
-  readonly resolvers: DeepkitGraphQLResolvers = new DeepkitGraphQLResolvers();
+  readonly resolvers: Resolvers = new Resolvers();
 
   constructor(private readonly driver: ClassType<Driver>) {
     super();
@@ -20,7 +20,7 @@ export class GraphQLModule extends createModule({
 
   process(): void {
     this.addProvider({
-      provide: DeepkitGraphQLResolvers,
+      provide: Resolvers,
       useValue: this.resolvers,
     });
     // TODO: https://discord.com/channels/759513055117180999/956485358382624790/1148211788270280814

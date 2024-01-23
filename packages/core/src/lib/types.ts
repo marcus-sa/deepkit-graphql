@@ -23,7 +23,6 @@ export interface GraphQLMiddleware {
 }
 
 export type GraphQLMiddlewareFn = (
-  context: Context<unknown>,
   next: (err?: Error) => void,
 ) => Promise<void> | void;
 

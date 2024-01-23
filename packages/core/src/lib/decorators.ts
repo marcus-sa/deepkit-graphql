@@ -24,7 +24,7 @@ import {
 import { requireTypeName } from './utils';
 import { InternalMiddleware } from './types';
 
-export const typeResolvers = new Map<string, ClassType>();
+export const typeResolvers = new Map<string, ClassType<unknown>>();
 
 export class GraphQLClassMetadata {
   type?: TypeClass | TypeObjectLiteral;

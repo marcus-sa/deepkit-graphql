@@ -9,12 +9,11 @@ import { Driver } from './driver';
 import { Resolvers } from './resolvers';
 
 export class GraphQLModule extends createModule({
-  listeners: [GraphQLServer],
   forRoot: true,
 }) {
   readonly resolvers: Resolvers = new Resolvers();
 
-  constructor(private readonly driver: ClassType<Driver>) {
+  constructor(private readonly driver?: ClassType<Driver>) {
     super();
   }
 
@@ -24,10 +23,14 @@ export class GraphQLModule extends createModule({
       useValue: this.resolvers,
     });
     // TODO: https://discord.com/channels/759513055117180999/956485358382624790/1148211788270280814
-    this.addProvider({
-      provide: Driver,
-      useClass: this.driver,
-    });
+
+    if (this.driver) {
+      this.addProvider({
+        provide: Driver,
+        useClass: this.driver,
+      });
+      this.addListener(GraphQLServer);
+    }
   }
 
   // TODO

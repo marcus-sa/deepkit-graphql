@@ -1,5 +1,12 @@
 
 
+## [0.5.0](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.4.0...core-v0.5.0) (2024-01-24)
+
+
+### Features
+
+* **core:** allow schema merging and remove unused injector context dependency ([6004f0e](https://github.com/marcus-sa/deepkit-graphql/commit/6004f0e7f20712e289f3d009479ab02b00bd4ce4))
+
 ## [0.4.0](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.3.4...core-v0.4.0) (2024-01-23)
 
 

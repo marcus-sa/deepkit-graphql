@@ -1,6 +1,6 @@
 import { ReceiveType, resolveReceiveType, Type } from '@deepkit/type';
 import { ClassType } from '@deepkit/core';
-import { InjectorContext, InjectorModule } from '@deepkit/injector';
+import { mergeSchemas } from '@graphql-tools/schema';
 import {
   GraphQLFieldConfigMap,
   GraphQLNamedType,
@@ -17,14 +17,14 @@ import { GraphQLContext } from './types';
 export interface SchemaBuilderOptions {
   readonly inputTypes?: readonly Type[];
   readonly outputTypes?: readonly Type[];
+  readonly schemas?: readonly GraphQLSchema[];
 }
 
 export function buildSchema(
   resolvers: Resolvers,
-  injectorContext: InjectorContext = new InjectorContext(new InjectorModule()),
   options?: SchemaBuilderOptions,
 ): GraphQLSchema {
-  return new SchemaBuilder(resolvers, injectorContext, options).build();
+  return new SchemaBuilder(resolvers, options).build();
 }
 
 export class SchemaBuilder {
@@ -32,14 +32,10 @@ export class SchemaBuilder {
 
   private readonly outputTypes = new Set<Type>(this.options?.outputTypes);
 
-  private readonly typesBuilder = new TypesBuilder(
-    this.resolvers,
-    this.injectorContext,
-  );
+  private readonly typesBuilder = new TypesBuilder(this.resolvers,);
 
   constructor(
     private readonly resolvers: Resolvers,
-    private readonly injectorContext: InjectorContext,
     private readonly options?: SchemaBuilderOptions,
   ) {}
 
@@ -194,11 +190,15 @@ export class SchemaBuilder {
     const subscription = this.buildRootSubscriptionType();
     const types = [...this.buildInputTypes(), ...this.buildOutputTypes()];
 
-    return new GraphQLSchema({
+    const schema = new GraphQLSchema({
       query,
       mutation,
       subscription,
       types,
     });
+
+    if (!this.options?.schemas?.length) return schema;
+
+    return mergeSchemas({ schemas: [schema, ...this.options.schemas] });
   }
 }

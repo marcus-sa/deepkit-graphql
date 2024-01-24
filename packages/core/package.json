@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "graphql-scalars": "1.22.2",
+    "@graphql-tools/schema": "10.0.2",
     "tslib": "2.6.2"
   },
   "peerDependencies": {
@@ -19,8 +20,8 @@
     "@deepkit/http": "^1.0.1-alpha.113",
     "@deepkit/type": "^1.0.1-alpha.113",
     "@deepkit/broker": "^1.0.1-alpha.113",
-    "rxjs": "^7.8.1",
-    "@deepkit/injector": "^1.0.1-alpha.113"
+    "@deepkit/injector": "^1.0.1-alpha.113",
+    "rxjs": "^7.8.1"
   },
   "publishConfig": {
     "access": "public"

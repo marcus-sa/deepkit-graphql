@@ -21,7 +21,6 @@ export class GraphQLServer {
   async onServerMainBootstrapDone(): Promise<void> {
     const schemaBuilder = new SchemaBuilder(
       this.resolvers,
-      this.injectorContext,
     );
     const schema = schemaBuilder.build();
     await this.driver.start(schema);

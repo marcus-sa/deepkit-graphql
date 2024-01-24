@@ -91,10 +91,7 @@ export class TypesBuilder {
 
   private readonly inputObjectTypes = new Map<string, GraphQLInputObjectType>();
 
-  constructor(
-    private readonly resolvers: Resolvers,
-    private readonly injectorContext: InjectorContext,
-  ) {}
+  constructor(private readonly resolvers: Resolvers) {}
 
   getScalarType(type: Type): GraphQLScalarType {
     if (type.typeName === 'ID') return GraphQLID;

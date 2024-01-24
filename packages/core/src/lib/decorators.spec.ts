@@ -17,7 +17,7 @@ import {
 import { graphql } from './decorators';
 import { buildSchema } from './schema-builder';
 import { Resolvers } from './resolvers';
-import { Context, GraphQLMiddleware, Parent } from './types';
+import { Context, GraphQLContext, GraphQLMiddleware, Parent } from './types';
 
 /*test('invalid return type for mutation', () => {
   expect(() => {
@@ -75,11 +75,11 @@ test('middleware errors', async () => {
     { controller: TestResolver, module: injectorContext.rootModule },
   ]);
 
-  const schema = buildSchema(resolvers, injectorContext);
+  const schema = buildSchema(resolvers);
 
   await executeGraphQL({
     schema,
-    contextValue: { injectorContext },
+    contextValue: <GraphQLContext>{ injectorContext },
     source: `{ get }`,
   });
 
@@ -120,11 +120,11 @@ test('resolver middleware is invoked', async () => {
     { controller: TestResolver, module: injectorContext.rootModule },
   ]);
 
-  const schema = buildSchema(resolvers, injectorContext);
+  const schema = buildSchema(resolvers);
 
   await executeGraphQL({
     schema,
-    contextValue: { injectorContext },
+    contextValue: <GraphQLContext>{ injectorContext },
     source: `{ get }`,
   });
 
@@ -165,11 +165,11 @@ test('query middleware is invoked', async () => {
     { controller: TestResolver, module: injectorContext.rootModule },
   ]);
 
-  const schema = buildSchema(resolvers, injectorContext);
+  const schema = buildSchema(resolvers);
 
   await executeGraphQL({
     schema,
-    contextValue: { injectorContext },
+    contextValue: <GraphQLContext>{ injectorContext },
     source: `{ get }`,
   });
 
@@ -210,11 +210,11 @@ test('mutation middleware is invoked', async () => {
     { controller: TestResolver, module: injectorContext.rootModule },
   ]);
 
-  const schema = buildSchema(resolvers, injectorContext);
+  const schema = buildSchema(resolvers);
 
   await executeGraphQL({
     schema,
-    contextValue: { injectorContext },
+    contextValue: <GraphQLContext>{ injectorContext },
     source: `mutation { create }`,
   });
 
@@ -255,11 +255,11 @@ test('subscription middleware is invoked', async () => {
     { controller: TestResolver, module: injectorContext.rootModule },
   ]);
 
-  const schema = buildSchema(resolvers, injectorContext);
+  const schema = buildSchema(resolvers);
 
   await executeGraphQL({
     schema,
-    contextValue: { injectorContext },
+    contextValue: <GraphQLContext>{ injectorContext },
     source: `subscription { create }`,
   });
 
@@ -298,7 +298,7 @@ test('mutation', async () => {
   await expect(
     executeGraphQL({
       schema,
-      contextValue: { injectorContext },
+      contextValue: <GraphQLContext>{ injectorContext },
       source: `mutation { createUser(data: { username: "Test" }) { id } }`,
     }),
   ).resolves.toMatchSnapshot();
@@ -329,7 +329,7 @@ test('query', async () => {
   await expect(
     executeGraphQL({
       schema,
-      contextValue: { injectorContext },
+      contextValue: <GraphQLContext>{ injectorContext },
       source: `{ getUser(id: 1) { id } }`,
       rootValue: {},
     }),
@@ -364,7 +364,7 @@ test('mutation args validation', async () => {
 
   await expect(
     executeGraphQL({
-      contextValue: { injectorContext },
+      contextValue: <GraphQLContext>{ injectorContext },
       source: `mutation { createUser(data: { username: "Test" }) { username } }`,
       schema,
     }),
@@ -403,7 +403,7 @@ test.skip('Context', async () => {
 
   await expect(
     executeGraphQL({
-      contextValue: { injectorContext },
+      contextValue: <GraphQLContext>{ injectorContext },
       source: `
         {
           info {
@@ -468,7 +468,7 @@ describe('resolveField', () => {
     await expect(
       executeGraphQL({
         schema,
-        contextValue: { injectorContext },
+        contextValue: <GraphQLContext>{ injectorContext },
         source: `
           {
             getUser(id: "9f617521-b9c2-4ab9-a339-3c551c799027") {
@@ -529,7 +529,7 @@ describe('resolveField', () => {
 
     await expect(
       executeGraphQL({
-        contextValue: { injectorContext },
+        contextValue: <GraphQLContext>{ injectorContext },
         source: `
           {
             getUser(id: "398cdf36-e3ac-475c-90aa-c70f99add874") {

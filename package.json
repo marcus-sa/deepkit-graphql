@@ -12,6 +12,7 @@
     "@deepkit-modules/nx-webpack-plugin": "^0.2.12",
     "@deepkit/postgres": "1.0.1-alpha.113",
     "@deepkit/type-compiler": "1.0.1-alpha.112",
+    "@graphql-tools/schema": "^10.0.2",
     "@nx/devkit": "^16.8.0",
     "@nx/esbuild": "16.7.4",
     "@nx/eslint-plugin": "16.7.4",

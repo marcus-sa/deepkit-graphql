@@ -1,5 +1,5 @@
 import { GraphQLEnumType, GraphQLID, GraphQLUnionType } from 'graphql';
-import { InjectorContext, InjectorModule } from '@deepkit/injector';
+import { InjectorContext } from '@deepkit/injector';
 import {
   BrokerBus,
   BrokerBusChannel,
@@ -49,7 +49,7 @@ import {
 
 import { TypesBuilder } from './types-builder';
 import { GraphQLContext, ID } from './types';
-import { Resolver, Resolvers } from './resolvers';
+import { Resolvers } from './resolvers';
 import { isAsyncIterable } from './utils';
 import { InvalidSubscriptionTypeError } from './errors';
 
@@ -59,7 +59,6 @@ describe('TypesBuilder', () => {
   beforeEach(() => {
     builder = new TypesBuilder(
       new Resolvers([]),
-      new InjectorContext(new InjectorModule()),
     );
   });
 

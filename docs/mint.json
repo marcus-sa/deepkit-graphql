@@ -31,20 +31,46 @@
       "name": "Changelog",
       "icon": "list",
       "url": "https://github.com/marcus-sa/deepkit-graphql/releases"
-    },
-    {
-      "name": "Community",
-      "icon": "discord",
-      "url": "https://discord.gg/U24mryk7Wq"
     }
   ],
   "navigation": [
     {
       "group": "Home",
       "pages": ["introduction", "quickstart"]
+    },
+    {
+      "group": "Concepts",
+      "pages": [
+        {
+          "group": "Types",
+          "pages": [
+            "concepts/types/overview",
+            "concepts/types/inline",
+            "concepts/types/referenced",
+            "concepts/types/data",
+            "concepts/types/utility",
+            "concepts/types/annotations",
+            "concepts/types/validation"
+          ]
+        },
+        "concepts/resolvers"
+      ]
+    },
+    {
+      "group": "Guides",
+      "pages": ["guides/apollo", "guides/yoga", "guides/standalone"]
+    },
+    {
+      "group": "Migrations",
+      "pages": ["migrations/nestjs"]
+    },
+    {
+      "group": "Comparisons",
+      "pages": ["comparisons/nestjs"]
     }
   ],
   "footerSocials": {
-    "github": "https://github.com/marcus-sa/deepkit-graphql"
+    "github": "https://github.com/marcus-sa/deepkit-graphql",
+    "discord": "https://discord.gg/U24mryk7Wq"
   }
 }

@@ -1,3 +1,0 @@
-# Queries
-
-Start typing here...

@@ -1,3 +1,0 @@
-# Context
-
-Start typing here...

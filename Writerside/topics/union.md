@@ -1,3 +1,0 @@
-# Union
-
-Start typing here...

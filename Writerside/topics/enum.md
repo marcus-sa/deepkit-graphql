@@ -1,3 +1,0 @@
-# Enum
-
-Start typing here...

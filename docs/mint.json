@@ -1,0 +1,50 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Deepkit GraphQL",
+  "logo": {
+    "dark": "/logo/white.png",
+    "light": "/logo/black.png"
+  },
+  "feedback": {
+    "suggestEdit": true,
+    "raiseIssue": true,
+    "thumbsRating": true
+  },
+  "favicon": "/logo/white.png",
+  "colors": {
+    "primary": "#E10098",
+    "light": "#E10098",
+    "dark": "#E10098"
+  },
+  "topbarLinks": [
+    {
+      "name": "Documentation",
+      "url": "https://mintlify.com/docs"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Get Started",
+    "url": "/quickstart"
+  },
+  "anchors": [
+    {
+      "name": "Changelog",
+      "icon": "list",
+      "url": "https://github.com/marcus-sa/deepkit-graphql/releases"
+    },
+    {
+      "name": "Community",
+      "icon": "discord",
+      "url": "https://discord.gg/U24mryk7Wq"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Home",
+      "pages": ["introduction", "quickstart"]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/marcus-sa/deepkit-graphql"
+  }
+}

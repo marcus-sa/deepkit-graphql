@@ -1,0 +1,16 @@
+{
+  "name": "docs",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "mint",
+  "projectType": "application",
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "docs",
+        "command": "mintlify dev"
+      }
+    }
+  },
+  "tags": ["docs"]
+}

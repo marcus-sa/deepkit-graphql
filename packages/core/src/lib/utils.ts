@@ -14,6 +14,7 @@ import {
   TypeNull,
   TypeObjectLiteral,
   TypeUndefined,
+  Positive,
 } from '@deepkit/type';
 
 import {
@@ -26,6 +27,10 @@ import { gqlClassDecorator, GraphQLClassMetadata } from './decorators';
 
 export function isAsyncIterable(obj: unknown): obj is AsyncIterable<unknown> {
   return obj != null && typeof obj === 'object' && Symbol.asyncIterator in obj;
+}
+
+export function hasDecorator(type: Type, name: string): boolean {
+  return !!type.decorators?.some(decorator => decorator.typeName === name);
 }
 
 export function transformAsyncIteratorResult<In, Out>(

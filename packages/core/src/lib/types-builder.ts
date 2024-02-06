@@ -44,7 +44,7 @@ import {
   GraphQLUnionType,
 } from 'graphql';
 
-import { Context, GraphQLContext, GraphQLFields, Instance, InternalMiddleware } from './types';
+import { GraphQLContext, GraphQLFields, InternalMiddleware } from './types';
 import { typeResolvers } from './decorators';
 import { Resolver, Resolvers } from './resolvers';
 import { InvalidSubscriptionTypeError, TypeNameRequiredError } from './errors';
@@ -56,6 +56,8 @@ import {
   Float,
   ID as GraphQLID,
   Int,
+  SignedBinaryBigInt,
+  BinaryBigInt,
   NegativeFloat,
   NegativeInt,
   NonNegativeFloat,
@@ -75,6 +77,7 @@ import {
   getNonExcludedReflectionClassProperties,
   getParentMetaAnnotationReflectionParameterIndex,
   getTypeName,
+  hasDecorator,
   isAsyncIterable,
   maybeUnwrapPromiseLikeType,
   maybeUnwrapSubscriptionReturnType,
@@ -108,64 +111,86 @@ export class TypesBuilder {
         return Void;
 
       case ReflectionKind.bigint:
-        return BigInt;
+        switch (true) {
+          case hasDecorator(type, 'SignedBinaryBigInt'):
+            return SignedBinaryBigInt;
+
+          case hasDecorator(type, 'BinaryBigInt'):
+            return BinaryBigInt;
+
+          default:
+            return BigInt;
+        }
 
       case ReflectionKind.number: {
-        const hasPositiveNoZeroDecorator = type.decorators?.find(
-          decorator => decorator.typeName === 'PositiveNoZero',
-        );
-        const hasPositiveDecorator = type.decorators?.find(
-          decorator => decorator.typeName === 'Positive',
-        );
-        const hasNegativeNoZeroDecorator = type.decorators?.find(
-          decorator => decorator.typeName === 'NegativeNoZero',
-        );
-        const hasNegativeDecorator = type.decorators?.find(
-          decorator => decorator.typeName === 'Negative',
-        );
+        const hasPositiveNoZeroDecorator = hasDecorator(type, 'PositiveNoZero');
+        const hasPositiveDecorator = hasDecorator(type, 'Positive');
+        const hasNegativeNoZeroDecorator = hasDecorator(type, 'NegativeNoZero');
+        const hasNegativeDecorator = hasDecorator(type, 'Negative');
 
-        if (
-          type.brand === TypeNumberBrand.float ||
-          type.brand === TypeNumberBrand.float32 ||
-          type.brand === TypeNumberBrand.float64
-        ) {
-          if (hasPositiveNoZeroDecorator) return PositiveFloat;
-          if (hasNegativeNoZeroDecorator) return NegativeFloat;
-          if (hasNegativeDecorator) return NonPositiveFloat;
-          if (hasPositiveDecorator) return NonNegativeFloat;
-          return Float;
+        switch (type.brand) {
+          case TypeNumberBrand.float:
+          case TypeNumberBrand.float32:
+          case TypeNumberBrand.float64:
+            switch (true) {
+              case hasPositiveNoZeroDecorator:
+                return PositiveFloat;
+
+              case hasNegativeNoZeroDecorator:
+                return NegativeFloat;
+
+              case hasNegativeDecorator:
+                return NonPositiveFloat;
+
+              case hasPositiveDecorator:
+                return NonNegativeFloat;
+
+              default:
+                return Float;
+            }
+
+          case TypeNumberBrand.uint8:
+          case TypeNumberBrand.uint16:
+          case TypeNumberBrand.uint32:
+            return PositiveInt;
+
+          case TypeNumberBrand.integer:
+          case TypeNumberBrand.int8:
+          case TypeNumberBrand.int16:
+          case TypeNumberBrand.int32:
+            switch (true) {
+              case hasPositiveNoZeroDecorator:
+                return PositiveInt;
+
+              case hasNegativeNoZeroDecorator:
+                return NegativeInt;
+
+              case hasNegativeDecorator:
+                return NonPositiveInt;
+
+              case hasPositiveDecorator:
+                return NonNegativeInt;
+
+              default:
+                return Int;
+            }
+
+          default:
+            throw new Error(`Add a decorator to type "number"`);
         }
-
-        if (
-          type.brand === TypeNumberBrand.uint8 ||
-          type.brand === TypeNumberBrand.uint16 ||
-          type.brand === TypeNumberBrand.uint32
-        ) {
-          return PositiveInt;
-        }
-
-        if (
-          type.brand === TypeNumberBrand.integer ||
-          type.brand === TypeNumberBrand.int8 ||
-          type.brand === TypeNumberBrand.int16 ||
-          type.brand === TypeNumberBrand.int32
-        ) {
-          if (hasPositiveNoZeroDecorator) return PositiveInt;
-          if (hasNegativeNoZeroDecorator) return NegativeInt;
-          if (hasNegativeDecorator) return NonPositiveInt;
-          if (hasPositiveDecorator) return NonNegativeInt;
-          return Int;
-        }
-
-        throw new Error(`Add a decorator to type "number"`);
       }
 
       case ReflectionKind.literal:
         return String;
 
       case ReflectionKind.string:
-        if (type.typeName === 'UUID') return UUID;
-        return String;
+        switch (true) {
+          case type.typeName === 'UUID':
+            return UUID;
+
+          default:
+            return String;
+        }
 
       default:
         throw new Error(`Kind ${type.kind} is not supported`);
@@ -250,8 +275,18 @@ export class TypesBuilder {
       case Date.name:
         return DateTime;
 
+      // TODO: Custom scalars
       case ArrayBuffer.name:
+      case Int8Array.name:
       case Uint8Array.name:
+      case Int16Array.name:
+      case Uint16Array.name:
+      case Int32Array.name:
+      case Uint32Array.name:
+      case Float32Array.name:
+      case Float64Array.name:
+      case BigInt64Array.name:
+      case BigUint64Array.name:
         return Byte;
 
       default:
@@ -668,7 +703,10 @@ export class TypesBuilder {
     );
 
     return async (parent, _args, { injectorContext }: GraphQLContext) => {
-      const args = deserializeArgs(_args, { loosely: false }) as Record<string, unknown>;
+      const args = deserializeArgs(_args, { loosely: false }) as Record<
+        string,
+        unknown
+      >;
       const argsValidationErrors = validateArgs(args);
       if (argsValidationErrors.length) {
         const originalError = new ValidationError(argsValidationErrors);

@@ -19,9 +19,7 @@ export class GraphQLServer {
 
   @eventDispatcher.listen(onServerMainBootstrapDone)
   async onServerMainBootstrapDone(): Promise<void> {
-    const schemaBuilder = new SchemaBuilder(
-      this.resolvers,
-    );
+    const schemaBuilder = new SchemaBuilder(this.resolvers);
     const schema = schemaBuilder.build();
     await this.driver.start(schema);
   }

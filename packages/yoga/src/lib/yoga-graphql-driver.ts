@@ -29,7 +29,9 @@ export class YogaDriver extends Driver {
   ): Promise<void> {
     if (!event.request.method || !this.server) return;
 
-    await this.server.handle(event.request, event.response, <GraphQLContext>{ injectorContext });
+    await this.server.handle(event.request, event.response, <GraphQLContext>{
+      injectorContext,
+    });
   }
 
   async start(schema: GraphQLSchema): Promise<void> {

@@ -103,3 +103,15 @@ export const UUID = transformScalar(GraphQLUUID);
 export const DateTime = transformScalar(GraphQLDateTime);
 
 export const Byte = transformScalar(GraphQLByte);
+
+export const BinaryBigInt = transformScalar(
+  new GraphQLScalarType({
+    name: 'BinaryBigInt',
+  }),
+);
+
+export const SignedBinaryBigInt = transformScalar(
+  new GraphQLScalarType({
+    name: 'SignedBinaryBigInt',
+  }),
+);

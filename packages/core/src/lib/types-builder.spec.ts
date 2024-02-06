@@ -57,9 +57,7 @@ describe('TypesBuilder', () => {
   let builder: TypesBuilder;
 
   beforeEach(() => {
-    builder = new TypesBuilder(
-      new Resolvers([]),
-    );
+    builder = new TypesBuilder(new Resolvers([]));
   });
 
   describe('createResolveFunction', () => {

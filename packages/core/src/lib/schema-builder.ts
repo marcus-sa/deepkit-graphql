@@ -32,7 +32,7 @@ export class SchemaBuilder {
 
   private readonly outputTypes = new Set<Type>(this.options?.outputTypes);
 
-  private readonly typesBuilder = new TypesBuilder(this.resolvers,);
+  private readonly typesBuilder = new TypesBuilder(this.resolvers);
 
   constructor(
     private readonly resolvers: Resolvers,

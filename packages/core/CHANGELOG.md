@@ -1,5 +1,12 @@
 
 
+## [0.6.0](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.5.2...core-v0.6.0) (2024-02-07)
+
+
+### Features
+
+* **core:** add initial support for directives ([4b53067](https://github.com/marcus-sa/deepkit-graphql/commit/4b530676d33bbbd744b8b893a0f7f35f5011273f))
+
 ## [0.5.2](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.5.1...core-v0.5.2) (2024-02-06)
 
 ## [0.5.1](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.5.0...core-v0.5.1) (2024-02-06)

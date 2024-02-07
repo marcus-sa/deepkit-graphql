@@ -33,6 +33,7 @@ export class GraphQLClassMetadata {
   readonly mutations = new Map<string, GraphQLPropertyMetadata>();
   readonly queries = new Map<string, GraphQLPropertyMetadata>();
   readonly resolveFields = new Map<string, GraphQLPropertyMetadata>();
+  readonly resolveReferences = new Map<string, GraphQLPropertyMetadata>();
   readonly subscriptions = new Map<string, GraphQLPropertyMetadata>();
   readonly checks = new Set<(decorator: GraphQLClassDecorator) => void>();
 }
@@ -87,6 +88,10 @@ export class GraphQLClassDecorator {
     this.t.resolveFields.set(property, metadata);
   }
 
+  addResolveReference(property: string, metadata: GraphQLPropertyMetadata) {
+    this.t.resolveReferences.set(property, metadata);
+  }
+
   addCheck(check: (decorator: GraphQLClassDecorator) => void) {
     this.t.checks.add(check);
   }
@@ -121,12 +126,26 @@ interface GraphQLResolveFieldOptions {
   deprecationReason?: string;
 }
 
+interface GraphQLResolveReferencedOptions {
+  name?: string;
+  description?: string;
+  deprecationReason?: string;
+}
+
+export enum GraphQLPropertyType {
+  QUERY,
+  MUTATION,
+  SUBSCRIPTION,
+  RESOLVE_FIELD,
+  RESOLVE_REFERENCE,
+}
+
 export class GraphQLPropertyMetadata implements GraphQLQueryOptions {
   name: string;
   property: string;
   classType: ClassType;
   middleware: Set<InternalMiddleware> = new Set<InternalMiddleware>();
-  type: 'query' | 'mutation' | 'subscription' | 'resolveField';
+  type: GraphQLPropertyType;
   // TODO
   // returnType: Type;
   description?: string;
@@ -145,21 +164,23 @@ class GraphQLPropertyDecorator {
 
     gqlClassDecorator.addCheck(() => {
       switch (this.t.type) {
-        case 'mutation':
-          gqlClassDecorator.addMutation(property, this.t)(classType);
-          break;
+        case GraphQLPropertyType.MUTATION:
+          return gqlClassDecorator.addMutation(property, this.t)(classType);
 
-        case 'query':
-          gqlClassDecorator.addQuery(property, this.t)(classType);
-          break;
+        case GraphQLPropertyType.QUERY:
+          return gqlClassDecorator.addQuery(property, this.t)(classType);
 
-        case 'resolveField':
-          gqlClassDecorator.addResolveField(property, this.t)(classType);
-          break;
+        case GraphQLPropertyType.RESOLVE_FIELD:
+          return gqlClassDecorator.addResolveField(property, this.t)(classType);
 
-        case 'subscription':
-          gqlClassDecorator.addSubscription(property, this.t)(classType);
-          break;
+        case GraphQLPropertyType.RESOLVE_REFERENCE:
+          return gqlClassDecorator.addResolveReference(
+            property,
+            this.t,
+          )(classType);
+
+        case GraphQLPropertyType.SUBSCRIPTION:
+          return gqlClassDecorator.addSubscription(property, this.t)(classType);
 
         default:
           throw new Error('Invalid type');
@@ -175,7 +196,7 @@ class GraphQLPropertyDecorator {
     if (options?.name) {
       this.t.name = options.name;
     }
-    this.t.type = 'query';
+    this.t.type = GraphQLPropertyType.QUERY;
     this.t.description = options?.description;
     this.t.deprecationReason = options?.deprecationReason;
   }
@@ -184,7 +205,7 @@ class GraphQLPropertyDecorator {
     if (options?.name) {
       this.t.name = options.name;
     }
-    this.t.type = 'mutation';
+    this.t.type = GraphQLPropertyType.MUTATION;
     this.t.description = options?.description;
     this.t.deprecationReason = options?.deprecationReason;
   }
@@ -193,17 +214,43 @@ class GraphQLPropertyDecorator {
     if (options?.name) {
       this.t.name = options.name;
     }
-    this.t.type = 'subscription';
+    this.t.type = GraphQLPropertyType.SUBSCRIPTION;
     this.t.description = options?.description;
     this.t.deprecationReason = options?.deprecationReason;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  resolveReference(options?: GraphQLResolveReferencedOptions) {
+    if (options?.name) {
+      this.t.name = options.name;
+    }
+    this.t.type = GraphQLPropertyType.RESOLVE_REFERENCE;
+    this.t.description = options?.description;
+    this.t.deprecationReason = options?.deprecationReason;
+
+    this.t.checks.add(resolverDecorator => {
+      if (!resolverDecorator.t.type) {
+        throw new Error(
+          'Can only resolve references for resolvers with a type @graphql.resolver<T>()',
+        );
+      }
+
+      const resolverType = reflect(this.t.classType);
+      const reflectionClass = ReflectionClass.from(resolverType);
+
+      if (!reflectionClass.hasMethod(this.t.name)) {
+        const typeName = requireTypeName(resolverDecorator.t.type);
+        throw new Error(
+          `No field ${this.t.name} found on type ${typeName} for reference resolver method ${this.t.property} on resolver ${this.t.classType.name}`,
+        );
+      }
+    });
+  }
+
   resolveField(options?: GraphQLResolveFieldOptions) {
     if (options?.name) {
       this.t.name = options.name;
     }
-    this.t.type = 'resolveField';
+    this.t.type = GraphQLPropertyType.RESOLVE_FIELD;
     this.t.description = options?.description;
     this.t.deprecationReason = options?.deprecationReason;
 

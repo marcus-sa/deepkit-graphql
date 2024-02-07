@@ -52,12 +52,26 @@
             "concepts/types/validation"
           ]
         },
-        "concepts/resolvers"
+        {
+          "group": "Resolvers",
+          "pages": [
+            "concepts/resolvers/overview",
+            "concepts/resolvers/queries",
+            "concepts/resolvers/mutations",
+            "concepts/resolvers/subscriptions",
+            "concepts/resolvers/fields",
+            "concepts/resolvers/middleware"
+          ]
+        }
       ]
     },
     {
       "group": "Integrations",
-      "pages": ["integrations/apollo", "integrations/yoga", "integrations/standalone"]
+      "pages": [
+        "integrations/apollo",
+        "integrations/yoga",
+        "integrations/standalone"
+      ]
     },
     {
       "group": "Migrations",

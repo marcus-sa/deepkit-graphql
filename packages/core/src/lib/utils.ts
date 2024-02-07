@@ -2,10 +2,10 @@ import { AbstractClassType } from '@deepkit/core';
 import { BrokerBusChannel } from '@deepkit/broker';
 import { Observable } from 'rxjs';
 import {
+  excludedAnnotation,
   metaAnnotation,
   ReflectionClass,
   ReflectionKind,
-  excludedAnnotation,
   ReflectionParameter,
   ReflectionProperty,
   stringifyType,
@@ -13,8 +13,8 @@ import {
   TypeClass,
   TypeNull,
   TypeObjectLiteral,
+  isNullable,
   TypeUndefined,
-  Positive,
 } from '@deepkit/type';
 
 import {
@@ -93,7 +93,11 @@ export function filterReflectionParametersMetaAnnotationsForArguments(
   return argsParameters;
 }
 
-export function requireTypeName(type: TypeObjectLiteral | TypeClass): string {
+export function isParameterNullable(parameter: ReflectionParameter): boolean {
+  return parameter.isOptional() || isNullable(parameter.type);
+}
+
+export function requireTypeName(type: Type): string {
   const name = getTypeName(type);
   if (name.startsWith('UnknownTypeName:()=>')) {
     throw new UnknownTypeNameError(type);
@@ -104,14 +108,13 @@ export function requireTypeName(type: TypeObjectLiteral | TypeClass): string {
 export function excludeNullAndUndefinedTypes(
   types: readonly Type[],
 ): readonly Exclude<Type, TypeUndefined | TypeNull>[] {
-  return types.filter(
-    type =>
-      type.kind !== ReflectionKind.undefined &&
-      type.kind !== ReflectionKind.null,
-  ) as readonly Exclude<Type, TypeUndefined | TypeNull>[];
+  return types.filter(type => !isNullable(type)) as readonly Exclude<
+    Type,
+    TypeUndefined | TypeNull
+  >[];
 }
 
-export function getTypeArgument(type: Type): Type {
+export function getFirstTypeArgument(type: Type): Type {
   const typeArgument = type.typeArguments?.[0];
   if (!typeArgument) {
     throw new MissingTypeArgumentError(type);
@@ -126,7 +129,7 @@ export function maybeUnwrapSubscriptionReturnType(type: Type): Type {
     case type.typeName === 'AsyncIterable':
     case (type as TypeClass).classType === BrokerBusChannel:
     case (type as TypeClass).classType === Observable:
-      return getTypeArgument(type);
+      return getFirstTypeArgument(type);
 
     default:
       return type;

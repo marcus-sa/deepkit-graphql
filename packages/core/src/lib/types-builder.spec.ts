@@ -1,10 +1,17 @@
-import { GraphQLEnumType, GraphQLID, GraphQLUnionType } from 'graphql';
-import { InjectorContext } from '@deepkit/injector';
 import {
-  BrokerBus,
-  BrokerBusChannel,
-  BrokerMemoryAdapter,
-} from '@deepkit/broker';
+  GraphQLBoolean,
+  GraphQLEnumType,
+  GraphQLFloat,
+  GraphQLID,
+  GraphQLInt,
+  GraphQLList,
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLUnionType,
+  parse,
+} from 'graphql';
+import { InjectorContext } from '@deepkit/injector';
+import { BrokerBus, BrokerBusChannel, BrokerMemoryAdapter } from '@deepkit/broker';
 import { BehaviorSubject, Observable } from 'rxjs';
 import {
   Excluded,
@@ -26,6 +33,7 @@ import {
 import {
   GraphQLBigInt,
   GraphQLByte,
+  GraphQLDateTime,
   GraphQLNegativeFloat,
   GraphQLNegativeInt,
   GraphQLNonNegativeFloat,
@@ -34,24 +42,17 @@ import {
   GraphQLNonPositiveInt,
   GraphQLPositiveFloat,
   GraphQLPositiveInt,
-  GraphQLDateTime,
   GraphQLUUID,
   GraphQLVoid,
 } from 'graphql-scalars';
-import {
-  GraphQLList,
-  GraphQLObjectType,
-  GraphQLBoolean,
-  GraphQLString,
-  GraphQLInt,
-  GraphQLFloat,
-} from 'graphql';
 
 import { TypesBuilder } from './types-builder';
 import { GraphQLContext, ID } from './types';
 import { Resolvers } from './resolvers';
 import { isAsyncIterable } from './utils';
 import { InvalidSubscriptionTypeError } from './errors';
+import { FederationKey } from './directives';
+import { GraphQLPropertyType } from '@deepkit-graphql/core';
 
 describe('TypesBuilder', () => {
   let builder: TypesBuilder;
@@ -80,7 +81,7 @@ describe('TypesBuilder', () => {
           resolver,
           reflectionMethod,
           [],
-          'subscription',
+          GraphQLPropertyType.SUBSCRIPTION,
         );
 
         const asyncIterable: AsyncIterable<unknown> = await resolve(
@@ -117,7 +118,7 @@ describe('TypesBuilder', () => {
           resolver,
           reflectionMethod,
           [],
-          'subscription',
+          GraphQLPropertyType.SUBSCRIPTION,
         );
 
         const asyncIterable: AsyncIterable<unknown> = await resolve(
@@ -165,7 +166,7 @@ describe('TypesBuilder', () => {
           resolver,
           reflectionMethod,
           [],
-          'subscription',
+          GraphQLPropertyType.SUBSCRIPTION,
         );
 
         const asyncIterable: AsyncIterable<unknown> = await resolve(
@@ -208,7 +209,7 @@ describe('TypesBuilder', () => {
           resolver,
           reflectionMethod,
           [],
-          'subscription',
+          GraphQLPropertyType.SUBSCRIPTION,
         );
 
         const asyncIterable: AsyncIterable<unknown> = await resolve(
@@ -246,10 +247,34 @@ describe('TypesBuilder', () => {
             resolver,
             reflectionMethod,
             [],
-            'subscription',
+            GraphQLPropertyType.SUBSCRIPTION,
           ),
         ).toThrowError(InvalidSubscriptionTypeError);
       });
+    });
+  });
+
+  describe('createObjectTypeDefinitionNode', () => {
+    test('federation key directive', () => {
+      interface User {
+        readonly id: UUID & FederationKey;
+        readonly name: string;
+      }
+
+      const user = ReflectionClass.from<User>();
+
+      const definitionNode = parse(
+        `
+          type User @key(fields: "id") {
+            id: UUID!
+            name: String!
+          }
+        `,
+      ).definitions[0];
+
+      expect(definitionNode).toMatchObject(
+        builder.createObjectTypeDefinitionNode(user),
+      );
     });
   });
 
@@ -366,7 +391,7 @@ describe('TypesBuilder', () => {
   });
 
   test('BrokerBusChannel return type', () => {
-    type UserCreatedEvent = { type: 'user-created'; id: number };
+    type UserCreatedEvent = { readonly type: 'user-created'; readonly id: ID };
 
     // @ts-expect-error type only
     function test(): BrokerBusChannel<UserCreatedEvent> {}
@@ -582,51 +607,105 @@ describe('TypesBuilder', () => {
 
     expect(union.getTypes().map(type => type.toConfig()))
       .toMatchInlineSnapshot(`
-          [
-            {
-              "astNode": undefined,
-              "description": undefined,
-              "extensionASTNodes": [],
-              "extensions": {},
-              "fields": {
+      [
+        {
+          "astNode": {
+            "directives": [],
+            "fields": [
+              {
+                "description": undefined,
+                "kind": "FieldDefinition",
+                "name": {
+                  "kind": "Name",
+                  "value": "type",
+                },
                 "type": {
-                  "args": {},
-                  "astNode": undefined,
-                  "deprecationReason": undefined,
-                  "description": undefined,
-                  "extensions": {},
-                  "resolve": undefined,
-                  "subscribe": undefined,
-                  "type": "String!",
+                  "kind": "NonNullType",
+                  "type": {
+                    "kind": "NamedType",
+                    "name": {
+                      "kind": "Name",
+                      "value": "String",
+                    },
+                  },
                 },
               },
-              "interfaces": [],
-              "isTypeOf": undefined,
-              "name": "Cat",
+            ],
+            "kind": "ObjectTypeDefinition",
+            "name": {
+              "kind": "Name",
+              "value": "Cat",
             },
-            {
+          },
+          "description": undefined,
+          "extensionASTNodes": [],
+          "extensions": {},
+          "fields": {
+            "type": {
+              "args": {},
               "astNode": undefined,
+              "deprecationReason": undefined,
               "description": undefined,
-              "extensionASTNodes": [],
               "extensions": {},
-              "fields": {
+              "resolve": undefined,
+              "subscribe": undefined,
+              "type": "String!",
+            },
+          },
+          "interfaces": [],
+          "isTypeOf": undefined,
+          "name": "Cat",
+        },
+        {
+          "astNode": {
+            "directives": [],
+            "fields": [
+              {
+                "description": undefined,
+                "kind": "FieldDefinition",
+                "name": {
+                  "kind": "Name",
+                  "value": "type",
+                },
                 "type": {
-                  "args": {},
-                  "astNode": undefined,
-                  "deprecationReason": undefined,
-                  "description": undefined,
-                  "extensions": {},
-                  "resolve": undefined,
-                  "subscribe": undefined,
-                  "type": "String!",
+                  "kind": "NonNullType",
+                  "type": {
+                    "kind": "NamedType",
+                    "name": {
+                      "kind": "Name",
+                      "value": "String",
+                    },
+                  },
                 },
               },
-              "interfaces": [],
-              "isTypeOf": undefined,
-              "name": "Dog",
+            ],
+            "kind": "ObjectTypeDefinition",
+            "name": {
+              "kind": "Name",
+              "value": "Dog",
             },
-          ]
-      `);
+          },
+          "description": undefined,
+          "extensionASTNodes": [],
+          "extensions": {},
+          "fields": {
+            "type": {
+              "args": {},
+              "astNode": undefined,
+              "deprecationReason": undefined,
+              "description": undefined,
+              "extensions": {},
+              "resolve": undefined,
+              "subscribe": undefined,
+              "type": "String!",
+            },
+          },
+          "interfaces": [],
+          "isTypeOf": undefined,
+          "name": "Dog",
+        },
+      ]
+    `);
   });
 
   test('enum', () => {

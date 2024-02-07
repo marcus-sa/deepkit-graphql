@@ -1,0 +1,119 @@
+---
+title: 'Standalone'
+---
+Deepkit GraphQL seamlessly integrates into any existing setup that supports a custom GraphQL schema and context.
+
+Here's an example using [Apollo Server](https://www.apollographql.com/docs/apollo-server):
+<CodeGroup>
+```typescript main.ts
+import { ApolloServer } from 'apollo-server';
+
+import { schema } from './schema';
+import { injectorContext } from './app';
+
+await new ApolloServer({
+  schema,
+  context: () => {
+    const gqlInjectorContext = injectorContext.createChildScope('graphql');
+    // You can do whatever you want with the GraphQL injector context here
+    return {
+      injectorContext: gqlInjectorContext,
+    };
+  },
+}).listen();
+```
+
+```typescript schema.ts
+import * as user from './user/types';
+
+export const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: () => ({
+      user: user.queries,
+    }),
+  }),
+  mutation: new GraphQLObjectType({
+    name: 'Mutation',
+    fields: () => ({
+      user: user.mutations,
+    }),
+  }),
+});
+```
+
+```typescript app.ts
+import { App } from '@deepkit/app';
+import { GraphQLModule, Resolvers, TypesBuilder } from '@deepkit-graphql/core';
+
+import { UserModule } from './user/user.module';
+
+const gqlModule = new GraphQLModule();
+
+export const app = new App({
+  imports: [gqlModule, new UserModule()],
+});
+
+export const injectorContext = app.serviceContainer.getInjectorContext();
+
+export const builder = new TypesBuilder(gqlModule.resolvers);
+```
+
+```typescript user/user.module.ts
+import { createModule } from '@deepkit/app';
+
+import { UserResolver } from './user.resolver';
+
+export class UserModule extends createModule({
+  controllers: [UserResolver],
+}) {}
+```
+
+```typescript user/user.resolver.ts
+import { graphql } from '@deepkit-graphql/core';
+
+export interface User {
+  // ...
+}
+
+@graphql.resolver<User>()
+export class UserResolver {
+  @graphql.query()
+  get(): Promise<User> {
+    // ...
+  }
+
+  @graphql.mutation()
+  create(): Promise<User> {
+    // ...
+  }
+}
+```
+
+```typescript user/types.ts
+import { GraphQLObjectType } from 'graphql';
+
+import { builder } from '../app';
+import { UserResolver } from './user.resolver';
+
+export const queries = {
+  type: new GraphQLObjectType({
+    name: 'UserQueries',
+    fields: () =>
+      builder.generateQueryResolverFields({
+        controller: UserResolver,
+      }),
+  }),
+};
+
+export const mutations = {
+  type: new GraphQLObjectType({
+    name: 'UserMutations',
+    fields: () =>
+      builder.generateMutationResolverFields({
+        controller: UserResolver,
+      }),
+  }),
+};
+```
+</CodeGroup>

@@ -1,0 +1,34 @@
+---
+title: 'Apollo'
+description: 'Use [Apollo](https://www.apollographql.com/docs/apollo-server/) as the underlying GraphQL server'
+---
+
+## 1. Installation
+<Tabs>
+  <Tab title="npm">
+    ```sh
+    $ npm install @deepkit-graphql/apollo
+    ```
+  </Tab>
+  <Tab title="yarn">
+    ```sh
+    $ yarn add @deepkit-graphql/apollo
+    ```
+  </Tab>
+  <Tab title="pnpm">
+    ```sh
+    $ pnpm add @deepkit-graphql/apollo
+    ```
+  </Tab>
+</Tabs>
+
+## 2. Setup
+```typescript
+import { ApolloGraphQLModule } from '@deepkit-graphql/apollo';
+
+await new App({
+  imports: [new ApolloGraphQLModule()],
+}).run();
+```
+<Info>Remove `GraphQLModule` if it's already imported</Info>
+

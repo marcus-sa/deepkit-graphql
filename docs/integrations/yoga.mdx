@@ -1,0 +1,33 @@
+---
+title: 'Yoga'
+description: 'Use [Yoga](https://the-guild.dev/graphql/yoga-server) as the underlying GraphQL server'
+---
+
+## 1. Installation
+<Tabs>
+  <Tab title="npm">
+    ```sh
+    $ npm install @deepkit-graphql/yoga
+    ```
+  </Tab>
+  <Tab title="yarn">
+    ```sh
+    $ yarn add @deepkit-graphql/yoga
+    ```
+  </Tab>
+  <Tab title="pnpm">
+    ```sh
+    $ pnpm add @deepkit-graphql/yoga
+    ```
+  </Tab>
+</Tabs>
+
+## 2. Setup
+```typescript
+import { YogaGraphQLModule } from '@deepkit-graphql/yoga';
+
+await new App({
+  imports: [new YogaGraphQLModule()],
+}).run();
+```
+<Info>Remove `GraphQLModule` if it's already imported</Info>

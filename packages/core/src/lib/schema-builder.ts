@@ -13,6 +13,7 @@ import { Resolvers } from './resolvers';
 import { TypesBuilder } from './types-builder';
 import { gqlClassDecorator } from './decorators';
 import { GraphQLContext } from './types';
+import { buildSubgraphSchema, printSubgraphSchema } from '@apollo/subgraph';
 
 export interface SchemaBuilderOptions {
   readonly inputTypes?: readonly Type[];

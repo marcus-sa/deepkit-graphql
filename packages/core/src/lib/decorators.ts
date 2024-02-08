@@ -140,7 +140,7 @@ export enum GraphQLPropertyType {
   RESOLVE_REFERENCE,
 }
 
-export class GraphQLPropertyMetadata implements GraphQLQueryOptions {
+export class GraphQLPropertyMetadata {
   name: string;
   property: string;
   classType: ClassType;
@@ -234,17 +234,22 @@ class GraphQLPropertyDecorator {
         );
       }
 
-      const resolverType = reflect(this.t.classType);
-      const reflectionClass = ReflectionClass.from(resolverType);
+      // TODO: Check that type has FederatedKey annotation on any of its fields
 
-      if (!reflectionClass.hasMethod(this.t.name)) {
-        const typeName = requireTypeName(resolverDecorator.t.type);
-        throw new Error(
-          `No field ${this.t.name} found on type ${typeName} for reference resolver method ${this.t.property} on resolver ${this.t.classType.name}`,
-        );
-      }
+      // const resolverType = reflect(this.t.classType);
+      // const reflectionClass = ReflectionClass.from(resolverType);
+
+      // if (!reflectionClass.hasMethod(this.t.name)) {
+      //   const typeName = requireTypeName(resolverDecorator.t.type);
+      //   throw new Error(
+      //     `No field ${this.t.name} found on type ${typeName} for reference resolver method ${this.t.property} on resolver ${this.t.classType.name}`,
+      //   );
+      // }
     });
   }
+
+  // TODO: https://www.apollographql.com/docs/federation/federated-types/federated-directives#provides
+  provides() {}
 
   resolveField(options?: GraphQLResolveFieldOptions) {
     if (options?.name) {

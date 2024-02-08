@@ -49,7 +49,7 @@ exports[`query 1`] = `
 }
 `;
 
-exports[`resolveField parent 1`] = `
+exports[`resolveField Parent 1`] = `
 {
   "data": {
     "getUser": {

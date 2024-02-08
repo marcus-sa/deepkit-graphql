@@ -4,6 +4,7 @@ import { BrokerBusChannel } from '@deepkit/broker';
 import { map, Observable } from 'rxjs';
 import { observableToAsyncIterable } from '@graphql-tools/utils';
 import { TypeNumberBrand } from '@deepkit/type-spec';
+import type { ApolloGraphQLObjectTypeExtensions } from '@apollo/subgraph/dist/schemaExtensions';
 import {
   deserializeFunction,
   isNullable,
@@ -28,10 +29,12 @@ import {
   ValidationError,
 } from '@deepkit/type';
 import {
+  BooleanValueNode,
   ConstArgumentNode,
   ConstDirectiveNode,
   ConstValueNode,
   FieldDefinitionNode,
+  FloatValueNode,
   GraphQLEnumType,
   GraphQLEnumValueConfigMap,
   GraphQLError,
@@ -48,6 +51,7 @@ import {
   GraphQLOutputType,
   GraphQLScalarType,
   GraphQLUnionType,
+  IntValueNode,
   Kind,
   ListTypeNode,
   NamedTypeNode,
@@ -59,9 +63,19 @@ import {
 } from 'graphql';
 
 import { GraphQLContext, GraphQLFields, InternalMiddleware } from './types';
-import { GraphQLPropertyType, typeResolvers } from './decorators';
+import {
+  GraphQLPropertyMetadata,
+  GraphQLPropertyType,
+  typeResolvers,
+} from './decorators';
 import { Resolver, Resolvers } from './resolvers';
-import { InvalidSubscriptionTypeError, TypeNameRequiredError } from './errors';
+import {
+  InvalidSubscriptionTypeError,
+  MissingNumberDecoratorError,
+  TypeNameRequiredError,
+  UnsupportedScalarTypeError,
+  UnsupportedScalarTypeForClassError,
+} from './errors';
 import {
   BigInt,
   BinaryBigInt,
@@ -99,7 +113,14 @@ import {
   requireTypeName,
   transformAsyncIteratorResult,
 } from './utils';
-import { FEDERATION_KEY_DIRECTIVE_NAME, getMetaAnnotationDirectives, hasMetaAnnotationDirective } from './directives';
+import {
+  FederationDirective,
+  getMetaAnnotationDirectiveName,
+  getMetaAnnotationDirectiveOptions,
+  getMetaAnnotationDirectives,
+  hasMetaAnnotationDirective,
+  isMetaAnnotationDirective,
+} from './directives';
 
 export class TypesBuilder {
   private readonly outputObjectTypes = new Map<string, GraphQLObjectType>();
@@ -110,7 +131,9 @@ export class TypesBuilder {
 
   private readonly inputObjectTypes = new Map<string, GraphQLInputObjectType>();
 
-  constructor(private readonly resolvers: Resolvers) {}
+  constructor(
+    private readonly resolvers: Resolvers, // private readonly orphanedTypes?: (TypeClass | TypeObjectLiteral)[],
+  ) {}
 
   getScalarType(type: Type): GraphQLScalarType {
     if (type.typeName === 'ID') return GraphQLID;
@@ -192,7 +215,7 @@ export class TypesBuilder {
             }
 
           default:
-            throw new Error(`Add a decorator to type "number"`);
+            throw new MissingNumberDecoratorError();
         }
       }
 
@@ -209,7 +232,7 @@ export class TypesBuilder {
         }
 
       default:
-        throw new Error(`Kind ${type.kind} is not supported`);
+        throw new UnsupportedScalarTypeError(type);
     }
   }
 
@@ -306,9 +329,7 @@ export class TypesBuilder {
         return Byte;
 
       default:
-        throw new Error(
-          `${type.classType.name} is not a supported scalar type`,
-        );
+        throw new UnsupportedScalarTypeForClassError(type);
     }
   }
 
@@ -325,11 +346,9 @@ export class TypesBuilder {
         return this.createNamedInputType(type);
 
       case ReflectionKind.class: {
-        try {
-          return this.getScalarTypeForClass(type);
-        } catch {
-          return this.createNamedInputType(type);
-        }
+        return this.getSupportedScalarTypeForClass(type, type =>
+          this.createNamedInputType(type),
+        );
       }
 
       case ReflectionKind.enum:
@@ -352,13 +371,10 @@ export class TypesBuilder {
       case ReflectionKind.objectLiteral:
         return this.createInputObjectType(type);
 
-      case ReflectionKind.class: {
-        try {
-          return this.getScalarTypeForClass(type);
-        } catch {
-          return this.createInputObjectType(type);
-        }
-      }
+      case ReflectionKind.class:
+        return this.getSupportedScalarTypeForClass(type, type =>
+          this.createInputObjectType(type),
+        );
 
       case ReflectionKind.array:
         return this.createInputListType(type);
@@ -368,6 +384,20 @@ export class TypesBuilder {
 
       default:
         return this.getScalarType(type);
+    }
+  }
+
+  getSupportedScalarTypeForClass<T>(
+    type: TypeClass,
+    fallback: (type: TypeClass) => T,
+  ): GraphQLScalarType | T {
+    try {
+      return this.getScalarTypeForClass(type);
+    } catch (err) {
+      if (err instanceof UnsupportedScalarTypeForClassError) {
+        return fallback(type);
+      }
+      throw err;
     }
   }
 
@@ -382,11 +412,9 @@ export class TypesBuilder {
           type.types,
         );
 
-        if (typesWithoutNullAndUndefined.length === 1) {
-          return this.createNamedOutputType(typesWithoutNullAndUndefined[0]);
-        }
-
-        return this.createUnionType(type);
+        return typesWithoutNullAndUndefined.length === 1
+          ? this.createNamedOutputType(typesWithoutNullAndUndefined[0])
+          : this.createUnionType(type);
       }
 
       case ReflectionKind.propertySignature:
@@ -395,13 +423,10 @@ export class TypesBuilder {
       case ReflectionKind.objectLiteral:
         return this.createOutputObjectType(type);
 
-      case ReflectionKind.class: {
-        try {
-          return this.getScalarTypeForClass(type);
-        } catch {
-          return this.createOutputObjectType(type);
-        }
-      }
+      case ReflectionKind.class:
+        return this.getSupportedScalarTypeForClass(type, type =>
+          this.createOutputObjectType(type),
+        );
 
       case ReflectionKind.enum:
         return this.createEnumType(type);
@@ -418,26 +443,38 @@ export class TypesBuilder {
     };
   }
 
-  createObjectTypeDefinitionNode<T>(
-    reflection: ReflectionClass<T>,
+  createObjectTypeDefinitionNode(
+    type: TypeObjectLiteral | TypeClass,
   ): ObjectTypeDefinitionNode {
-    let directives: readonly ConstDirectiveNode[] = [];
+    const reflectionClass = ReflectionClass.from(type);
 
-    for (const property of reflection.getProperties()) {
-      const annotations = getMetaAnnotationDirectives(property.type);
-      if (!annotations) continue;
+    const name = type.typeName || reflectionClass.getName();
 
-      if (
-        hasMetaAnnotationDirective(annotations, FEDERATION_KEY_DIRECTIVE_NAME)
-      ) {
-        directives = [
-          ...directives,
-          this.createFederationKeyDirectiveNode(property.getNameAsString()),
-        ];
-      }
-    }
+    const objectTypeDirectives = getMetaAnnotationDirectives(
+      type,
+    ).map(annotation => this.createAnnotationDirectiveNode(annotation));
 
-    const fields = reflection
+    const federationKeyDirectives = reflectionClass
+      .getProperties()
+      .reduce((directives, property) => {
+        const annotations = getMetaAnnotationDirectives(property.type);
+
+        if (hasMetaAnnotationDirective(annotations, FederationDirective.KEY)) {
+          return [
+            ...directives,
+            this.createFederationKeyDirectiveNode(property.name),
+          ];
+        }
+
+        return directives;
+      }, [] as readonly ConstDirectiveNode[]);
+
+    const directives: readonly ConstDirectiveNode[] = [
+      ...objectTypeDirectives,
+      ...federationKeyDirectives,
+    ];
+
+    const fields = reflectionClass
       .getProperties()
       .map(property => this.createFieldDefinitionNode(property));
 
@@ -445,7 +482,7 @@ export class TypesBuilder {
       kind: Kind.OBJECT_TYPE_DEFINITION,
       name: {
         kind: Kind.NAME,
-        value: reflection.getName(),
+        value: name,
       },
       directives,
       fields,
@@ -454,7 +491,7 @@ export class TypesBuilder {
 
   createConstDirectiveNode(
     name: string,
-    args: readonly ConstArgumentNode[],
+    args?: readonly ConstArgumentNode[],
   ): ConstDirectiveNode {
     return {
       kind: Kind.DIRECTIVE,
@@ -480,10 +517,53 @@ export class TypesBuilder {
     };
   }
 
+  // TODO: multiple fields ?
   createFederationKeyDirectiveNode(name: string): ConstDirectiveNode {
-    return this.createConstDirectiveNode(FEDERATION_KEY_DIRECTIVE_NAME, [
+    return this.createConstDirectiveNode(FederationDirective.KEY, [
       this.createConstArgumentNode('fields', this.createStringValueNode(name)),
     ]);
+  }
+
+  createConstValueNode(type: Type): ConstValueNode {
+    switch (type.kind) {
+      case ReflectionKind.literal:
+        switch (typeof type.literal) {
+          case 'string':
+            return this.createStringValueNode(type.literal);
+
+          // TODO: handle Int & Float
+          case 'number':
+            return this.createIntValueNode(type.literal);
+
+          case 'symbol':
+            return this.createStringValueNode(type.literal.toString());
+
+          case 'boolean':
+            return this.createStringValueNode(type.literal.toString());
+
+          default:
+            throw new Error(
+              `Type literal ${typeof type.literal} not supported`,
+            );
+        }
+
+      default:
+        throw new Error(`Type ${type.kind} not supported`);
+    }
+  }
+
+  createAnnotationDirectiveNode(annotation: Type): ConstDirectiveNode {
+    const args = getMetaAnnotationDirectiveOptions(annotation).map(option =>
+      this.createConstArgumentNode(
+        option.name.toString(),
+        this.createConstValueNode(option.type),
+      ),
+    );
+
+    return this.createConstDirectiveNode(
+      getMetaAnnotationDirectiveName(annotation),
+      args,
+    );
   }
 
   createStringValueNode(value: string): StringValueNode {
@@ -494,14 +574,43 @@ export class TypesBuilder {
     };
   }
 
+  createIntValueNode(value: number): IntValueNode {
+    return {
+      kind: Kind.INT,
+      value: value.toString(),
+    };
+  }
+
+  createFloatValueNode(value: number): FloatValueNode {
+    return {
+      kind: Kind.FLOAT,
+      value: value.toString(),
+    };
+  }
+
+  createBooleanValueNode(value: boolean): BooleanValueNode {
+    return {
+      kind: Kind.BOOLEAN,
+      value,
+    };
+  }
+
   createFieldDefinitionNode(property: ReflectionProperty): FieldDefinitionNode {
     const description = property.getDescription()
       ? this.createStringValueNode(property.getDescription())
       : undefined;
 
+    const directives = getMetaAnnotationDirectives(property.type)
+      .filter(
+        annotation =>
+          !isMetaAnnotationDirective(annotation, FederationDirective.KEY),
+      )
+      .map(annotation => this.createAnnotationDirectiveNode(annotation));
+
     return {
       kind: Kind.FIELD_DEFINITION,
       description,
+      directives,
       name: this.createNameNode(property.getNameAsString()),
       type: this.createTypeNode(property.type),
     };
@@ -517,8 +626,14 @@ export class TypesBuilder {
   getTypeNodeName(type: Type): string {
     try {
       return this.getScalarType(type).name;
-    } catch {
-      return getTypeName(type);
+    } catch (err) {
+      if (
+        err instanceof UnsupportedScalarTypeError ||
+        err instanceof UnsupportedScalarTypeForClassError
+      ) {
+        return getTypeName(type);
+      }
+      throw err;
     }
   }
 
@@ -566,11 +681,9 @@ export class TypesBuilder {
         return this.createOutputObjectType(type);
 
       case ReflectionKind.class: {
-        try {
-          return this.getScalarTypeForClass(type);
-        } catch {
-          return this.createOutputObjectType(type);
-        }
+        return this.getSupportedScalarTypeForClass(type, type =>
+          this.createOutputObjectType(type),
+        );
       }
 
       case ReflectionKind.array:
@@ -592,67 +705,6 @@ export class TypesBuilder {
           resolver => resolver.controller === controllerClassType,
         ) as Resolver<T>)
       : undefined;
-  }
-
-  createOutputFields<T>(
-    reflectionClass: ReflectionClass<T>,
-  ): GraphQLFieldConfigMap<unknown, unknown> {
-    const resolver = this.getResolver(reflectionClass.type);
-
-    const reflectionClassProperties =
-      getNonExcludedReflectionClassProperties(reflectionClass);
-
-    return Object.fromEntries(
-      reflectionClassProperties.map(property => {
-        let type = this.createOutputType(property.type);
-
-        const propertyDirectives = getMetaAnnotationDirectives(property.type);
-
-        if (!property.isOptional() && !property.isNullable()) {
-          type = new GraphQLNonNull(type);
-        }
-
-        let config: GraphQLFieldConfig<unknown, unknown> = {
-          description: property.property.description,
-          // TODO
-          // deprecationReason: '',
-          type,
-        };
-
-        if (resolver) {
-          if (this.hasFieldResolver(resolver, property.name)) {
-            // eslint-disable-next-line functional/immutable-data
-            config = Object.assign(
-              config,
-              this.generateFieldResolver(resolver, property.name),
-            );
-          }
-
-          if (this.hasReferenceResolver(resolver, property.name)) {
-            // TODO: Do this check when applying decorators
-            if (
-              !propertyDirectives ||
-              !hasMetaAnnotationDirective(
-                propertyDirectives,
-                FEDERATION_KEY_DIRECTIVE_NAME,
-              )
-            ) {
-              throw new Error(
-                `Field "${property.name}" is missing "${FEDERATION_KEY_DIRECTIVE_NAME}" annotation`,
-              );
-            }
-
-            // eslint-disable-next-line functional/immutable-data
-            config = Object.assign(
-              config,
-              this.generateFieldResolver(resolver, property.name),
-            );
-          }
-        }
-
-        return [property.name, config];
-      }),
-    ) as GraphQLFieldConfigMap<unknown, unknown>;
   }
 
   createReturnType(type: Type): GraphQLOutputType {
@@ -714,27 +766,126 @@ export class TypesBuilder {
 
   createOutputObjectType(
     type: TypeObjectLiteral | TypeClass,
-    extraFields?: GraphQLFields<GraphQLOutputType>,
   ): GraphQLObjectType {
     const name = requireTypeName(type);
+
+    console.log(name);
 
     if (this.outputObjectTypes.has(name)) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return this.outputObjectTypes.get(name)!;
     }
 
-    const reflectionClass = ReflectionClass.from(type);
+    const typeReflectionClass = ReflectionClass.from(type);
+
+    const typeReflectionClassProperties =
+      getNonExcludedReflectionClassProperties(typeReflectionClass);
+
+    const resolver = this.getResolver(typeReflectionClass.type);
+
+    const extensions: ApolloGraphQLObjectTypeExtensions<
+      unknown,
+      GraphQLContext
+    > = {};
+
+    // TODO: add tests
+    if (resolver) {
+      const resolverMetadata = getClassDecoratorMetadata(resolver.controller);
+
+      const referenceResolverMetadata =
+        this.getReferenceResolverPropertyMetadata(
+          resolver,
+          typeReflectionClassProperties,
+        );
+
+      if (referenceResolverMetadata) {
+        const controllerReflectionClass = ReflectionClass.from(
+          referenceResolverMetadata.classType,
+        );
+
+        const reflectionMethod = controllerReflectionClass.getMethod(
+          referenceResolverMetadata.property,
+        );
+
+        const resolveReference = this.createResolveFunction(
+          resolver,
+          reflectionMethod,
+          [
+            ...resolverMetadata.middleware,
+            ...referenceResolverMetadata.middleware,
+          ],
+          referenceResolverMetadata.type,
+        );
+
+        extensions.apollo = {
+          ...extensions.apollo,
+          subgraph: {
+            ...extensions.apollo?.subgraph,
+            resolveReference: (source, context, info) =>
+              resolveReference(source, undefined, context, info),
+          },
+        };
+      }
+    }
 
     const objectType = new GraphQLObjectType({
       name,
       description: type.description,
       // TODO
       // deprecationReason: '',
-      astNode: this.createObjectTypeDefinitionNode(reflectionClass),
-      fields: () => {
-        const fields = this.createOutputFields(reflectionClass);
-        return { ...fields, ...extraFields };
-      },
+      extensions,
+      astNode: this.createObjectTypeDefinitionNode(type),
+      fields: () =>
+        Object.fromEntries(
+          typeReflectionClassProperties.map(property => {
+            let type = this.createOutputType(property.type);
+
+            if (!property.isOptional() && !property.isNullable()) {
+              type = new GraphQLNonNull(type);
+            }
+
+            let config: GraphQLFieldConfig<unknown, unknown> = {
+              description: property.property.description,
+              astNode: this.createFieldDefinitionNode(property),
+              // TODO
+              // deprecationReason: '',
+              type,
+            };
+
+            if (resolver) {
+              if (this.hasFieldResolver(resolver, property.name)) {
+                // eslint-disable-next-line functional/immutable-data
+                config = Object.assign(
+                  config,
+                  this.generateFieldResolver(resolver, property.name),
+                );
+              }
+
+              /*if (this.hasReferenceResolver(resolver, property.name)) {
+                // TODO: Do this check when applying decorators
+                if (
+                  !propertyDirectives ||
+                  !hasMetaAnnotationDirective(
+                    propertyDirectives,
+                    FEDERATION_KEY_DIRECTIVE_NAME,
+                  )
+                ) {
+                  throw new MissingFederatedKeyAnnotationError(
+                    property,
+                    reflectionClass,
+                  );
+                }
+                // eslint-disable-next-line functional/immutable-data
+                config = Object.assign(
+                  config,
+                  this.generateFieldResolver(resolver, property.name),
+                );
+              }*/
+            }
+
+            return [property.name, config];
+          }),
+        ),
     });
     this.outputObjectTypes.set(name, objectType);
 
@@ -788,19 +939,19 @@ export class TypesBuilder {
     if (type !== GraphQLPropertyType.SUBSCRIPTION) return returnType;
 
     if (
-      returnType.typeName === 'AsyncGenerator' ||
-      returnType.typeName === 'AsyncIterable' ||
-      (returnType as TypeClass).classType === BrokerBusChannel ||
-      (returnType as TypeClass).classType === Observable
+      returnType.typeName !== 'AsyncGenerator' &&
+      returnType.typeName !== 'AsyncIterable' &&
+      (returnType as TypeClass).classType !== BrokerBusChannel &&
+      (returnType as TypeClass).classType !== Observable
     ) {
-      return maybeUnwrapSubscriptionReturnType(returnType);
+      throw new InvalidSubscriptionTypeError(
+        returnType,
+        reflectionMethod.name,
+        resolver.controller.name,
+      );
     }
 
-    throw new InvalidSubscriptionTypeError(
-      returnType,
-      reflectionMethod.name,
-      resolver.controller.name,
-    );
+    return maybeUnwrapSubscriptionReturnType(returnType);
   }
 
   private createResolveFunction<T, Args extends unknown[] = []>(
@@ -1099,13 +1250,14 @@ export class TypesBuilder {
     );
   }
 
-  hasReferenceResolver<T>(
+  getReferenceResolverPropertyMetadata<T>(
     resolver: Resolver<T>,
-    referenceName: string,
-  ): boolean {
+    properties: readonly ReflectionProperty[],
+  ): GraphQLPropertyMetadata | undefined {
     const metadata = getClassDecoratorMetadata(resolver.controller);
-    return [...metadata.resolveReferences.values()].some(
-      reference => reference.name === referenceName,
+    const reflectionPropertyNames = properties.map(property => property.name);
+    return [...metadata.resolveReferences.values()].find(reference =>
+      reflectionPropertyNames.includes(reference.name),
     );
   }
 }

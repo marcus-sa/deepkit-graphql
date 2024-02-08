@@ -417,7 +417,7 @@ test.skip('Context', async () => {
 });
 
 describe('resolveField', () => {
-  test('parent', async () => {
+  test('Parent', async () => {
     @entity.name('post')
     class Post {
       readonly id: UUID & PrimaryKey = uuid();

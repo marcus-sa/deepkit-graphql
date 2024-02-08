@@ -1,5 +1,10 @@
-import { Type } from '@deepkit/type';
 import { AbstractClassType } from '@deepkit/core';
+import {
+  ReflectionClass,
+  ReflectionProperty,
+  Type,
+  TypeClass,
+} from '@deepkit/type';
 
 export class TypeNameRequiredError extends Error {
   constructor(readonly type: Type) {
@@ -21,9 +26,42 @@ export class InvalidSubscriptionTypeError extends Error {
   }
 }
 
+export class MissingNumberDecoratorError extends Error {
+  constructor() {
+    super(`Add a decorator to type "number"`);
+  }
+}
+
+export class UnsupportedScalarTypeForClassError extends Error {
+  constructor(type: TypeClass) {
+    super(`Class ${type.classType.name} is not a supported scalar type`);
+  }
+}
+
+export class UnsupportedScalarTypeError extends Error {
+  constructor(type: Type) {
+    // TODO: if kind is any, never or unknown show a help text indicating that reflection might not be enabled
+    super(
+      `Type ${type.typeName} with kind ${type.kind} is not a supported scalar type`,
+    );
+  }
+}
+
+export class MissingDirectiveAnnotationError extends Error {
+  constructor(
+    readonly property: ReflectionProperty,
+    readonly clazz: ReflectionClass<unknown>,
+    readonly name: string,
+  ) {
+    super(
+      `Property "${property.name}" on type "${clazz.type.typeName}" is missing "${name}" directive annotation`,
+    );
+  }
+}
+
 export class MissingTypeArgumentError extends Error {
   constructor(readonly type: Type) {
-    super(`Missing type argument for ${type.typeName}<T>`);
+    super(`Missing type argument for ${type.typeName}`);
   }
 }
 

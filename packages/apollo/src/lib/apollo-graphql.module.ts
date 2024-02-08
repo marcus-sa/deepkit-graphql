@@ -2,15 +2,17 @@ import { createModule } from '@deepkit/app';
 import { GraphQLModule } from '@deepkit-graphql/core';
 import { ApolloServerPlugin } from '@apollo/server/dist/esm/externalTypes/plugins';
 
-import { ApolloDriver } from './apollo-graphql-driver';
+import { ApolloDriver } from './apollo-driver';
 import {
   ApolloGraphQLConfig,
   ApolloServerOptions,
 } from './apollo-graphql-config';
 import { ApolloServerPlugins } from './plugins';
+import { ApolloFederationDriver } from './apollo-federation-driver';
 
 export interface ApolloGraphQLModuleOptions extends ApolloServerOptions {
   readonly plugins?: readonly ApolloServerPlugin[];
+  readonly federation?: boolean;
 }
 
 export class ApolloGraphQLModule extends createModule({
@@ -29,7 +31,14 @@ export class ApolloGraphQLModule extends createModule({
       provide: ApolloServerPlugins,
       useValue: this.plugins,
     });
-    this.addImport(new GraphQLModule(ApolloDriver));
+    const config = this.config as ApolloGraphQLModuleOptions;
+    if (config.federation) {
+      this.addImport(new GraphQLModule(ApolloFederationDriver));
+    } else if (config.gateway) {
+      // TODO: Dunno if we need a custom driver for gateway
+    } else {
+      this.addImport(new GraphQLModule(ApolloDriver));
+    }
   }
 
   addPlugin(plugin: ApolloServerPlugin): this {

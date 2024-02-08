@@ -17,6 +17,7 @@
     "@deepkit/app": "^1.0.1-alpha.113",
     "@deepkit/http": "^1.0.1-alpha.113",
     "@deepkit/framework": "^1.0.1-alpha.113",
+    "@apollo/subgraph": "^2.7.1",
     "graphql": "^16.8.0"
   },
   "publishConfig": {

@@ -2,10 +2,10 @@ import * as url from 'node:url';
 import { ApolloServer, HeaderMap, HTTPGraphQLRequest } from '@apollo/server';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { InjectorContext } from '@deepkit/injector';
-import { GraphQLSchema } from 'graphql';
 import { WebWorkerFactory, ApplicationServer } from '@deepkit/framework';
 import { HttpBadRequestError, httpWorkflow } from '@deepkit/http';
 import { Driver, GraphQLContext } from '@deepkit-graphql/core';
+import { GraphQLSchema } from 'graphql';
 
 import { ApolloGraphQLConfig } from './apollo-graphql-config';
 import { ApolloServerPlugins } from './plugins';

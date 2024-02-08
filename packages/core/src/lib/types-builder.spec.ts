@@ -11,7 +11,11 @@ import {
   parse,
 } from 'graphql';
 import { InjectorContext } from '@deepkit/injector';
-import { BrokerBus, BrokerBusChannel, BrokerMemoryAdapter } from '@deepkit/broker';
+import {
+  BrokerBus,
+  BrokerBusChannel,
+  BrokerMemoryAdapter,
+} from '@deepkit/broker';
 import { BehaviorSubject, Observable } from 'rxjs';
 import {
   Excluded,
@@ -27,7 +31,8 @@ import {
   Positive,
   PositiveNoZero,
   ReflectionClass,
-  ReflectionMethod,
+  ReflectionMethod, TypeClass, TypeObjectLiteral, typeOf,
+  uuid,
   UUID,
 } from '@deepkit/type';
 import {
@@ -51,8 +56,8 @@ import { GraphQLContext, ID } from './types';
 import { Resolvers } from './resolvers';
 import { isAsyncIterable } from './utils';
 import { InvalidSubscriptionTypeError } from './errors';
-import { FederationKey } from './directives';
-import { GraphQLPropertyType } from '@deepkit-graphql/core';
+import { Deprecated, FederationKey, FederationShareable, getMetaAnnotationDirectives } from './directives';
+import { GraphQLPropertyType } from './decorators';
 
 describe('TypesBuilder', () => {
   let builder: TypesBuilder;
@@ -60,6 +65,8 @@ describe('TypesBuilder', () => {
   beforeEach(() => {
     builder = new TypesBuilder(new Resolvers([]));
   });
+
+  // describe('createOutputObjectType', () => {});
 
   describe('createResolveFunction', () => {
     describe('given subscription', () => {
@@ -188,7 +195,7 @@ describe('TypesBuilder', () => {
       it('works with BrokerBus', async () => {
         const broker = new BrokerBus(new BrokerMemoryAdapter());
 
-        type UserEvents = { type: 'user-created'; id: number };
+        type UserEvents = { type: 'user-created'; id: UUID };
 
         const channel = broker.channel<UserEvents>('user-events');
 
@@ -222,7 +229,7 @@ describe('TypesBuilder', () => {
 
         const asyncIterator = asyncIterable[Symbol.asyncIterator]();
 
-        const message = { type: 'user-created', id: 1 };
+        const message = { type: 'user-created', id: uuid() };
 
         await channel.publish(message);
 
@@ -255,13 +262,86 @@ describe('TypesBuilder', () => {
   });
 
   describe('createObjectTypeDefinitionNode', () => {
-    test('federation key directive', () => {
+    test('Deprecated annotation', () => {
+      interface User {
+        readonly id: ID;
+        readonly oldField: string &
+          Deprecated<{
+            reason: 'oldField is deprecated. Use newField instead';
+          }>;
+        readonly newField: string;
+      }
+
+      const type = typeOf<User>() as TypeObjectLiteral;
+
+      const definitionNode = parse(
+        `
+          type User {
+            id: ID!
+            oldField: String! @deprecated(reason: "oldField is deprecated. Use newField instead")
+            newField: String!
+          }
+        `,
+      ).definitions[0];
+
+      expect(definitionNode).toMatchObject(
+        builder.createObjectTypeDefinitionNode(type),
+      );
+    });
+
+    describe('FederationShareable annotation', () => {
+      test('object', () => {
+        type Position = FederationShareable<{
+          readonly x: integer;
+          readonly y: integer;
+        }>;
+
+        const type = typeOf<Position>() as TypeObjectLiteral;
+
+        const definitionNode = parse(
+          `
+          type Position @shareable {
+            x: Int!
+            y: Int!
+          }
+        `,
+        ).definitions[0];
+
+        expect(definitionNode).toMatchObject(
+          builder.createObjectTypeDefinitionNode(type),
+        );
+      });
+
+      test('field', () => {
+        interface Position {
+          readonly x: integer & FederationShareable;
+          readonly y: integer & FederationShareable;
+        }
+
+        const type = typeOf<Position>() as TypeObjectLiteral;
+
+        const definitionNode = parse(
+          `
+          type Position {
+            x: Int! @shareable
+            y: Int! @shareable
+          }
+        `,
+        ).definitions[0];
+
+        expect(definitionNode).toMatchObject(
+          builder.createObjectTypeDefinitionNode(type),
+        );
+      });
+    })
+
+    test('FederationKey annotation', () => {
       interface User {
         readonly id: UUID & FederationKey;
         readonly name: string;
       }
 
-      const user = ReflectionClass.from<User>();
+      const type = typeOf<User>() as TypeObjectLiteral;
 
       const definitionNode = parse(
         `
@@ -273,7 +353,7 @@ describe('TypesBuilder', () => {
       ).definitions[0];
 
       expect(definitionNode).toMatchObject(
-        builder.createObjectTypeDefinitionNode(user),
+        builder.createObjectTypeDefinitionNode(type),
       );
     });
   });
@@ -418,7 +498,25 @@ describe('TypesBuilder', () => {
       {
         "name": {
           "args": [],
-          "astNode": undefined,
+          "astNode": {
+            "description": undefined,
+            "directives": [],
+            "kind": "FieldDefinition",
+            "name": {
+              "kind": "Name",
+              "value": "name",
+            },
+            "type": {
+              "kind": "NonNullType",
+              "type": {
+                "kind": "NamedType",
+                "name": {
+                  "kind": "Name",
+                  "value": "String",
+                },
+              },
+            },
+          },
           "deprecationReason": undefined,
           "description": undefined,
           "extensions": {},
@@ -548,31 +646,67 @@ describe('TypesBuilder', () => {
     expect(list).toBeInstanceOf(GraphQLObjectType);
     expect(list.name).toEqual('Test');
     expect(list.getFields()).toMatchInlineSnapshot(`
-          {
-            "one": {
-              "args": [],
-              "astNode": undefined,
-              "deprecationReason": undefined,
-              "description": undefined,
-              "extensions": {},
-              "name": "one",
-              "resolve": undefined,
-              "subscribe": undefined,
-              "type": "String!",
+      {
+        "one": {
+          "args": [],
+          "astNode": {
+            "description": undefined,
+            "directives": [],
+            "kind": "FieldDefinition",
+            "name": {
+              "kind": "Name",
+              "value": "one",
             },
-            "two": {
-              "args": [],
-              "astNode": undefined,
-              "deprecationReason": undefined,
-              "description": undefined,
-              "extensions": {},
-              "name": "two",
-              "resolve": undefined,
-              "subscribe": undefined,
-              "type": "String",
+            "type": {
+              "kind": "NonNullType",
+              "type": {
+                "kind": "NamedType",
+                "name": {
+                  "kind": "Name",
+                  "value": "String",
+                },
+              },
             },
-          }
-      `);
+          },
+          "deprecationReason": undefined,
+          "description": undefined,
+          "extensions": {},
+          "name": "one",
+          "resolve": undefined,
+          "subscribe": undefined,
+          "type": "String!",
+        },
+        "two": {
+          "args": [],
+          "astNode": {
+            "description": undefined,
+            "directives": [],
+            "kind": "FieldDefinition",
+            "name": {
+              "kind": "Name",
+              "value": "two",
+            },
+            "type": {
+              "kind": "NonNullType",
+              "type": {
+                "kind": "NamedType",
+                "name": {
+                  "kind": "Name",
+                  "value": "String",
+                },
+              },
+            },
+          },
+          "deprecationReason": undefined,
+          "description": undefined,
+          "extensions": {},
+          "name": "two",
+          "resolve": undefined,
+          "subscribe": undefined,
+          "type": "String",
+        },
+      }
+    `);
   });
 
   test('union', () => {
@@ -614,6 +748,7 @@ describe('TypesBuilder', () => {
             "fields": [
               {
                 "description": undefined,
+                "directives": [],
                 "kind": "FieldDefinition",
                 "name": {
                   "kind": "Name",
@@ -643,7 +778,25 @@ describe('TypesBuilder', () => {
           "fields": {
             "type": {
               "args": {},
-              "astNode": undefined,
+              "astNode": {
+                "description": undefined,
+                "directives": [],
+                "kind": "FieldDefinition",
+                "name": {
+                  "kind": "Name",
+                  "value": "type",
+                },
+                "type": {
+                  "kind": "NonNullType",
+                  "type": {
+                    "kind": "NamedType",
+                    "name": {
+                      "kind": "Name",
+                      "value": "String",
+                    },
+                  },
+                },
+              },
               "deprecationReason": undefined,
               "description": undefined,
               "extensions": {},
@@ -662,6 +815,7 @@ describe('TypesBuilder', () => {
             "fields": [
               {
                 "description": undefined,
+                "directives": [],
                 "kind": "FieldDefinition",
                 "name": {
                   "kind": "Name",
@@ -691,7 +845,25 @@ describe('TypesBuilder', () => {
           "fields": {
             "type": {
               "args": {},
-              "astNode": undefined,
+              "astNode": {
+                "description": undefined,
+                "directives": [],
+                "kind": "FieldDefinition",
+                "name": {
+                  "kind": "Name",
+                  "value": "type",
+                },
+                "type": {
+                  "kind": "NonNullType",
+                  "type": {
+                    "kind": "NamedType",
+                    "name": {
+                      "kind": "Name",
+                      "value": "String",
+                    },
+                  },
+                },
+              },
               "deprecationReason": undefined,
               "description": undefined,
               "extensions": {},
@@ -757,7 +929,25 @@ describe('TypesBuilder', () => {
       {
         "id": {
           "args": [],
-          "astNode": undefined,
+          "astNode": {
+            "description": undefined,
+            "directives": [],
+            "kind": "FieldDefinition",
+            "name": {
+              "kind": "Name",
+              "value": "id",
+            },
+            "type": {
+              "kind": "NonNullType",
+              "type": {
+                "kind": "NamedType",
+                "name": {
+                  "kind": "Name",
+                  "value": "String",
+                },
+              },
+            },
+          },
           "deprecationReason": undefined,
           "description": undefined,
           "extensions": {},
@@ -768,7 +958,25 @@ describe('TypesBuilder', () => {
         },
         "username": {
           "args": [],
-          "astNode": undefined,
+          "astNode": {
+            "description": undefined,
+            "directives": [],
+            "kind": "FieldDefinition",
+            "name": {
+              "kind": "Name",
+              "value": "username",
+            },
+            "type": {
+              "kind": "NonNullType",
+              "type": {
+                "kind": "NamedType",
+                "name": {
+                  "kind": "Name",
+                  "value": "String",
+                },
+              },
+            },
+          },
           "deprecationReason": undefined,
           "description": undefined,
           "extensions": {},
@@ -796,61 +1004,139 @@ describe('TypesBuilder', () => {
       builder.createOutputType<User>() as GraphQLObjectType;
 
     expect(userObjectType.getFields()).toMatchInlineSnapshot(`
-          {
-            "id": {
-              "args": [],
-              "astNode": undefined,
-              "deprecationReason": undefined,
-              "description": undefined,
-              "extensions": {},
-              "name": "id",
-              "resolve": undefined,
-              "subscribe": undefined,
-              "type": "String!",
+      {
+        "id": {
+          "args": [],
+          "astNode": {
+            "description": undefined,
+            "directives": [],
+            "kind": "FieldDefinition",
+            "name": {
+              "kind": "Name",
+              "value": "id",
             },
-            "posts": {
-              "args": [],
-              "astNode": undefined,
-              "deprecationReason": undefined,
-              "description": undefined,
-              "extensions": {},
-              "name": "posts",
-              "resolve": undefined,
-              "subscribe": undefined,
-              "type": "[Post]",
+            "type": {
+              "kind": "NonNullType",
+              "type": {
+                "kind": "NamedType",
+                "name": {
+                  "kind": "Name",
+                  "value": "String",
+                },
+              },
             },
-          }
-      `);
+          },
+          "deprecationReason": undefined,
+          "description": undefined,
+          "extensions": {},
+          "name": "id",
+          "resolve": undefined,
+          "subscribe": undefined,
+          "type": "String!",
+        },
+        "posts": {
+          "args": [],
+          "astNode": {
+            "description": undefined,
+            "directives": [],
+            "kind": "FieldDefinition",
+            "name": {
+              "kind": "Name",
+              "value": "posts",
+            },
+            "type": {
+              "kind": "NonNullType",
+              "type": {
+                "kind": "ListType",
+                "type": {
+                  "kind": "NonNullType",
+                  "type": {
+                    "kind": "NamedType",
+                    "name": {
+                      "kind": "Name",
+                      "value": "Post",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "deprecationReason": undefined,
+          "description": undefined,
+          "extensions": {},
+          "name": "posts",
+          "resolve": undefined,
+          "subscribe": undefined,
+          "type": "[Post]",
+        },
+      }
+    `);
 
     const postObjectType =
       builder.createOutputType<Post>() as GraphQLObjectType;
 
     expect(postObjectType.getFields()).toMatchInlineSnapshot(`
-          {
-            "author": {
-              "args": [],
-              "astNode": undefined,
-              "deprecationReason": undefined,
-              "description": undefined,
-              "extensions": {},
-              "name": "author",
-              "resolve": undefined,
-              "subscribe": undefined,
-              "type": "User",
+      {
+        "author": {
+          "args": [],
+          "astNode": {
+            "description": undefined,
+            "directives": [],
+            "kind": "FieldDefinition",
+            "name": {
+              "kind": "Name",
+              "value": "author",
             },
-            "id": {
-              "args": [],
-              "astNode": undefined,
-              "deprecationReason": undefined,
-              "description": undefined,
-              "extensions": {},
-              "name": "id",
-              "resolve": undefined,
-              "subscribe": undefined,
-              "type": "String!",
+            "type": {
+              "kind": "NonNullType",
+              "type": {
+                "kind": "NamedType",
+                "name": {
+                  "kind": "Name",
+                  "value": "User",
+                },
+              },
             },
-          }
-      `);
+          },
+          "deprecationReason": undefined,
+          "description": undefined,
+          "extensions": {},
+          "name": "author",
+          "resolve": undefined,
+          "subscribe": undefined,
+          "type": "User",
+        },
+        "id": {
+          "args": [],
+          "astNode": {
+            "description": undefined,
+            "directives": [],
+            "kind": "FieldDefinition",
+            "name": {
+              "kind": "Name",
+              "value": "id",
+            },
+            "type": {
+              "kind": "NonNullType",
+              "type": {
+                "kind": "NamedType",
+                "name": {
+                  "kind": "Name",
+                  "value": "String",
+                },
+              },
+            },
+          },
+          "deprecationReason": undefined,
+          "description": undefined,
+          "extensions": {},
+          "name": "id",
+          "resolve": undefined,
+          "subscribe": undefined,
+          "type": "String!",
+        },
+      }
+    `);
   });
 
   test.todo(

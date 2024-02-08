@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@apollo/server": "4.9.3",
+    "@apollo/subgraph": "^2.7.1",
     "@deepkit/app": "1.0.1-alpha.113",
     "@deepkit/broker": "1.0.1-alpha.113",
     "@deepkit/bson": "1.0.1-alpha.113",

@@ -9,6 +9,7 @@ export type ApolloServerOptions = Pick<
   | 'includeStacktraceInErrorResponses'
   | 'apollo'
   | 'stopOnTerminationSignals'
+  | 'gateway'
   | 'persistedQueries'
 >;
 

@@ -1,4 +1,4 @@
-import { ClassType, AbstractClassType } from '@deepkit/core';
+import { ClassType } from '@deepkit/core';
 import { TypeAnnotation } from '@deepkit/type';
 import { InjectorContext } from '@deepkit/injector';
 
@@ -11,11 +11,6 @@ export type Parent<T> = T & TypeAnnotation<typeof PARENT_META_NAME, T>;
 export const CONTEXT_META_NAME = 'context';
 
 export type Context<T> = T & TypeAnnotation<typeof CONTEXT_META_NAME, T>;
-
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type Instance<T = any> = T & {
-  readonly constructor: AbstractClassType<T>;
-};
 
 export type ID = string | number;
 

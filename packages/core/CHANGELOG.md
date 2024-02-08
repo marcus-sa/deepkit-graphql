@@ -1,5 +1,12 @@
 
 
+## [0.7.0](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.6.0...core-v0.7.0) (2024-02-08)
+
+
+### Features
+
+* **core:** implement federation resolve reference field resolver ([4801126](https://github.com/marcus-sa/deepkit-graphql/commit/480112660a9f0a4752759ab47e71d67944fd3b75))
+
 ## [0.6.0](https://github.com/marcus-sa/deepkit-graphql/compare/core-v0.5.2...core-v0.6.0) (2024-02-07)
 
 

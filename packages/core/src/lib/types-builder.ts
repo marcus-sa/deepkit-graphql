@@ -62,7 +62,12 @@ import {
   TypeNode,
 } from 'graphql';
 
-import { GraphQLContext, GraphQLFields, InternalMiddleware } from './types';
+import {
+  GraphQLContext,
+  GraphQLFields,
+  GraphQLObjectTypeExtensions,
+  InternalMiddleware,
+} from './types';
 import {
   GraphQLPropertyMetadata,
   GraphQLPropertyType,
@@ -302,6 +307,8 @@ export class TypesBuilder {
     return new GraphQLList(listType);
   }
 
+  createArgumentType() {}
+
   createOutputListType<T extends GraphQLOutputType>(
     type: TypeArray,
   ): GraphQLList<GraphQLOutputType> {
@@ -450,9 +457,9 @@ export class TypesBuilder {
 
     const name = type.typeName || reflectionClass.getName();
 
-    const objectTypeDirectives = getMetaAnnotationDirectives(
-      type,
-    ).map(annotation => this.createAnnotationDirectiveNode(annotation));
+    const objectTypeDirectives = getMetaAnnotationDirectives(type).map(
+      annotation => this.createAnnotationDirectiveNode(annotation),
+    );
 
     const federationKeyDirectives = reflectionClass
       .getProperties()
@@ -783,10 +790,7 @@ export class TypesBuilder {
 
     const resolver = this.getResolver(typeReflectionClass.type);
 
-    const extensions: ApolloGraphQLObjectTypeExtensions<
-      unknown,
-      GraphQLContext
-    > = {};
+    const extensions: GraphQLObjectTypeExtensions = {};
 
     // TODO: add tests
     if (resolver) {
@@ -828,13 +832,17 @@ export class TypesBuilder {
       }
     }
 
+    const astNode = this.createObjectTypeDefinitionNode(type);
+
+    extensions.directives = astNode.directives;
+
     const objectType = new GraphQLObjectType({
       name,
       description: type.description,
       // TODO
       // deprecationReason: '',
       extensions,
-      astNode: this.createObjectTypeDefinitionNode(type),
+      astNode,
       fields: () =>
         Object.fromEntries(
           typeReflectionClassProperties.map(property => {
@@ -844,9 +852,12 @@ export class TypesBuilder {
               type = new GraphQLNonNull(type);
             }
 
+            const astNode = this.createFieldDefinitionNode(property);
+
             let config: GraphQLFieldConfig<unknown, unknown> = {
               description: property.property.description,
-              astNode: this.createFieldDefinitionNode(property),
+              extensions: { directives: astNode.directives },
+              astNode,
               // TODO
               // deprecationReason: '',
               type,
@@ -1163,8 +1174,6 @@ export class TypesBuilder {
 
     return Object.fromEntries(fields.entries());
   }
-
-  generateReferenceResolver<T>(resolver: Resolver<T>) {}
 
   generateFieldResolver<T>(
     resolver: Resolver<T>,

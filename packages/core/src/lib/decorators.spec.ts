@@ -75,7 +75,7 @@ test('middleware errors', async () => {
     { controller: TestResolver, module: injectorContext.rootModule },
   ]);
 
-  const schema = buildSchema(resolvers);
+  const schema = await buildSchema(resolvers, injectorContext);
 
   await executeGraphQL({
     schema,
@@ -120,7 +120,7 @@ test('resolver middleware is invoked', async () => {
     { controller: TestResolver, module: injectorContext.rootModule },
   ]);
 
-  const schema = buildSchema(resolvers);
+  const schema = await buildSchema(resolvers, injectorContext);
 
   await executeGraphQL({
     schema,
@@ -165,7 +165,7 @@ test('query middleware is invoked', async () => {
     { controller: TestResolver, module: injectorContext.rootModule },
   ]);
 
-  const schema = buildSchema(resolvers);
+  const schema = await buildSchema(resolvers, injectorContext);
 
   await executeGraphQL({
     schema,
@@ -210,7 +210,7 @@ test('mutation middleware is invoked', async () => {
     { controller: TestResolver, module: injectorContext.rootModule },
   ]);
 
-  const schema = buildSchema(resolvers);
+  const schema = await buildSchema(resolvers, injectorContext);
 
   await executeGraphQL({
     schema,
@@ -255,7 +255,7 @@ test('subscription middleware is invoked', async () => {
     { controller: TestResolver, module: injectorContext.rootModule },
   ]);
 
-  const schema = buildSchema(resolvers);
+  const schema = await buildSchema(resolvers, injectorContext);
 
   await executeGraphQL({
     schema,
@@ -293,7 +293,7 @@ test('mutation', async () => {
     { controller: UserResolver, module: injectorContext.rootModule },
   ]);
 
-  const schema = buildSchema(resolvers);
+  const schema = await buildSchema(resolvers, injectorContext);
 
   await expect(
     executeGraphQL({
@@ -324,7 +324,7 @@ test('query', async () => {
     { controller: UserResolver, module: injectorContext.rootModule },
   ]);
 
-  const schema = buildSchema(resolvers);
+  const schema = await buildSchema(resolvers, injectorContext);
 
   await expect(
     executeGraphQL({
@@ -360,7 +360,7 @@ test('mutation args validation', async () => {
     { controller: UserResolver, module: injectorContext.rootModule },
   ]);
 
-  const schema = buildSchema(resolvers);
+  const schema = await buildSchema(resolvers, injectorContext);
 
   await expect(
     executeGraphQL({
@@ -399,7 +399,7 @@ test.skip('Context', async () => {
     { controller: TestResolver, module: injectorContext.rootModule },
   ]);
 
-  const schema = buildSchema(resolvers);
+  const schema = await buildSchema(resolvers, injectorContext);
 
   await expect(
     executeGraphQL({
@@ -463,7 +463,7 @@ describe('resolveField', () => {
       { controller: PostResolver, module: injectorContext.rootModule },
     ]);
 
-    const schema = buildSchema(resolvers);
+    const schema = await buildSchema(resolvers, injectorContext);
 
     await expect(
       executeGraphQL({
@@ -525,7 +525,7 @@ describe('resolveField', () => {
       { controller: PostResolver, module: injectorContext.rootModule },
     ]);
 
-    const schema = buildSchema(resolvers);
+    const schema = await buildSchema(resolvers, injectorContext);
 
     await expect(
       executeGraphQL({

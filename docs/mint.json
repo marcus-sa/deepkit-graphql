@@ -48,6 +48,7 @@
             "concepts/types/inline",
             "concepts/types/referenced",
             "concepts/types/data",
+            "concepts/types/directives",
             "concepts/types/utility",
             "concepts/types/validation"
           ]
@@ -69,6 +70,7 @@
       "group": "Integrations",
       "pages": [
         "integrations/apollo",
+        "integrations/apollo-federation",
         "integrations/yoga",
         "integrations/standalone"
       ]

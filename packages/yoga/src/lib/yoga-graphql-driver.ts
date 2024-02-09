@@ -3,7 +3,6 @@ import { WebWorkerFactory, ApplicationServer } from '@deepkit/framework';
 import { httpWorkflow } from '@deepkit/http';
 import { Driver, GraphQLContext } from '@deepkit-graphql/core';
 import { createYoga, YogaServerInstance } from 'graphql-yoga';
-import { TypeSource } from '@graphql-tools/utils';
 import { InjectorContext } from '@deepkit/injector';
 import { Logger } from '@deepkit/logger';
 
@@ -35,12 +34,7 @@ export class YogaDriver extends Driver {
     });
   }
 
-  async start(schema: TypeSource): Promise<void> {
-    if (!(schema instanceof GraphQLSchema)) {
-      throw new Error(
-        'Only GraphQLSchema is supported as TypeSource for YogaDriver',
-      );
-    }
+  async start(schema: GraphQLSchema): Promise<void> {
     this.getOrCreateHttpServer();
     const logging =
       (this.config as YogaGraphQLServerOptions).logging || this.logger;

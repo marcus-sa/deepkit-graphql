@@ -3,6 +3,7 @@ import { BrokerBusChannel } from '@deepkit/broker';
 import { Observable } from 'rxjs';
 import {
   excludedAnnotation,
+  isNullable,
   metaAnnotation,
   ReflectionClass,
   ReflectionKind,
@@ -12,8 +13,6 @@ import {
   Type,
   TypeClass,
   TypeNull,
-  TypeObjectLiteral,
-  isNullable,
   TypeUndefined,
 } from '@deepkit/type';
 

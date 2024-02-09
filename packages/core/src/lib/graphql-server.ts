@@ -8,19 +8,22 @@ import {
 
 import { Driver } from './driver';
 import { Resolvers } from './resolvers';
-import { SchemaBuilder } from './schema-builder';
+import { buildSchema } from './schema-builder';
+import { Directives } from './directives';
 
 export class GraphQLServer {
   constructor(
     private readonly resolvers: Resolvers,
     private readonly driver: Driver,
     private readonly injectorContext: InjectorContext,
+    private readonly directives: Directives,
   ) {}
 
   @eventDispatcher.listen(onServerMainBootstrapDone)
   async onServerMainBootstrapDone(): Promise<void> {
-    const schemaBuilder = new SchemaBuilder(this.resolvers);
-    const schema = schemaBuilder.build();
+    const schema = await buildSchema(this.resolvers, this.injectorContext, {
+      directives: this.directives,
+    });
     await this.driver.start(schema);
   }
 

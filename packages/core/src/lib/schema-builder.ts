@@ -1,7 +1,10 @@
 import { ReceiveType, resolveReceiveType, Type } from '@deepkit/type';
 import { ClassType } from '@deepkit/core';
 import { mergeSchemas } from '@graphql-tools/schema';
+import { InjectorContext } from '@deepkit/injector';
 import {
+  defaultFieldResolver,
+  DirectiveLocation,
   GraphQLFieldConfigMap,
   GraphQLNamedType,
   GraphQLObjectType,
@@ -13,19 +16,28 @@ import { Resolvers } from './resolvers';
 import { TypesBuilder } from './types-builder';
 import { gqlClassDecorator } from './decorators';
 import { GraphQLContext } from './types';
-import { buildSubgraphSchema, printSubgraphSchema } from '@apollo/subgraph';
+import { Directives, InternalDirective } from './directives';
+import {
+  getDirective,
+  MapperKind,
+  mapSchema,
+  SchemaMapper,
+} from '@graphql-tools/utils';
 
 export interface SchemaBuilderOptions {
   readonly inputTypes?: readonly Type[];
   readonly outputTypes?: readonly Type[];
+  readonly orphanedTypes?: readonly Type[];
   readonly schemas?: readonly GraphQLSchema[];
+  readonly directives?: Directives;
 }
 
-export function buildSchema(
+export async function buildSchema(
   resolvers: Resolvers,
+  injectorContext: InjectorContext,
   options?: SchemaBuilderOptions,
-): GraphQLSchema {
-  return new SchemaBuilder(resolvers, options).build();
+): Promise<GraphQLSchema> {
+  return await new SchemaBuilder(resolvers, injectorContext, options).build();
 }
 
 export class SchemaBuilder {
@@ -37,6 +49,7 @@ export class SchemaBuilder {
 
   constructor(
     private readonly resolvers: Resolvers,
+    private readonly injectorContext: InjectorContext,
     private readonly options?: SchemaBuilderOptions,
   ) {}
 
@@ -50,6 +63,77 @@ export class SchemaBuilder {
     return [...this.outputTypes].map(type =>
       this.typesBuilder.createNamedOutputType(type),
     );
+  }
+
+  private buildRootMutationType(): GraphQLObjectType | undefined {
+    const resolvers = [...this.resolvers];
+
+    const someMutations = resolvers.some(resolver =>
+      this.hasMutationResolvers(resolver.controller),
+    );
+    if (!someMutations) return;
+
+    return new GraphQLObjectType({
+      name: 'Mutation',
+      fields: () => this.generateMutationResolverFields(),
+    });
+  }
+
+  private buildRootSubscriptionType(): GraphQLObjectType | undefined {
+    const resolvers = [...this.resolvers];
+
+    const someSubscriptions = resolvers.some(resolver =>
+      this.hasSubscriptionResolvers(resolver.controller),
+    );
+    if (!someSubscriptions) return;
+
+    return new GraphQLObjectType({
+      name: 'Subscription',
+      fields: () => this.generateSubscriptionResolverFields(),
+    });
+  }
+
+  private getDirectives(): readonly InternalDirective<any>[] {
+    return (this.options?.directives ? [...this.options.directives] : []).map(
+      classType => this.injectorContext.get(classType),
+    );
+  }
+
+  private buildRootQueryType(): GraphQLObjectType | undefined {
+    const resolvers = [...this.resolvers];
+
+    const someQueries = resolvers.some(resolver =>
+      this.hasQueryResolvers(resolver.controller),
+    );
+    if (!someQueries) {
+      return new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          _dummy: { type: GraphQLString },
+        },
+      });
+    }
+
+    return new GraphQLObjectType({
+      name: 'Query',
+      fields: () => this.generateQueryResolverFields(),
+    });
+  }
+
+  addInputType<T>(type?: ReceiveType<T>): void {
+    type = resolveReceiveType(type);
+
+    if (!this.inputTypes.has(type)) {
+      this.inputTypes.add(type);
+    }
+  }
+
+  addOutputType<T>(type?: ReceiveType<T>): void {
+    type = resolveReceiveType(type);
+
+    if (!this.outputTypes.has(type)) {
+      this.outputTypes.add(type);
+    }
   }
 
   generateMutationResolverFields(): GraphQLFieldConfigMap<
@@ -120,83 +204,56 @@ export class SchemaBuilder {
     return !!resolver?.resolveFields.size;
   }
 
-  private buildRootMutationType(): GraphQLObjectType | undefined {
-    const resolvers = [...this.resolvers];
+  private async transformSchemaUsingDirective(
+    schema: GraphQLSchema,
+    directive: InternalDirective<any>,
+  ): Promise<GraphQLSchema> {
+    const schemaMapper: SchemaMapper = {};
 
-    const someMutations = resolvers.some(resolver =>
-      this.hasMutationResolvers(resolver.controller),
-    );
-    if (!someMutations) return;
+    if (typeof directive.transformObjectField === 'function') {
+      schemaMapper[MapperKind.OBJECT_FIELD] = fieldConfig => {
+        const fieldDirective = getDirective(
+          schema,
+          fieldConfig,
+          directive.name,
+        )?.[0];
 
-    return new GraphQLObjectType({
-      name: 'Mutation',
-      fields: () => this.generateMutationResolverFields(),
-    });
-  }
+        if (fieldDirective) {
+          const transform = directive.transformObjectField!(
+            fieldDirective,
+            fieldConfig,
+            schema,
+          );
+          fieldConfig.resolve = (source, args, context, info) => {
+            console.log(directive.args);
+          };
+        }
 
-  private buildRootSubscriptionType(): GraphQLObjectType | undefined {
-    const resolvers = [...this.resolvers];
-
-    const someSubscriptions = resolvers.some(resolver =>
-      this.hasSubscriptionResolvers(resolver.controller),
-    );
-    if (!someSubscriptions) return;
-
-    return new GraphQLObjectType({
-      name: 'Subscription',
-      fields: () => this.generateSubscriptionResolverFields(),
-    });
-  }
-
-  private buildRootQueryType(): GraphQLObjectType | undefined {
-    const resolvers = [...this.resolvers];
-
-    const someQueries = resolvers.some(resolver =>
-      this.hasQueryResolvers(resolver.controller),
-    );
-    if (!someQueries) {
-      return new GraphQLObjectType({
-        name: 'Query',
-        fields: {
-          _dummy: { type: GraphQLString },
-        },
-      });
+        return fieldConfig;
+      };
     }
 
-    return new GraphQLObjectType({
-      name: 'Query',
-      fields: () => this.generateQueryResolverFields(),
-    });
+    return mapSchema(schema, schemaMapper);
   }
 
-  addInputType<T>(type?: ReceiveType<T>): void {
-    type = resolveReceiveType(type);
-
-    if (!this.inputTypes.has(type)) {
-      this.inputTypes.add(type);
-    }
-  }
-
-  addOutputType<T>(type?: ReceiveType<T>): void {
-    type = resolveReceiveType(type);
-
-    if (!this.outputTypes.has(type)) {
-      this.outputTypes.add(type);
-    }
-  }
-
-  build(): GraphQLSchema {
+  async build(): Promise<GraphQLSchema> {
     const query = this.buildRootQueryType();
     const mutation = this.buildRootMutationType();
     const subscription = this.buildRootSubscriptionType();
     const types = [...this.buildInputTypes(), ...this.buildOutputTypes()];
+    const directives = this.getDirectives();
 
-    const schema = new GraphQLSchema({
+    let schema = new GraphQLSchema({
       query,
       mutation,
       subscription,
       types,
+      directives,
     });
+
+    for (const directive of directives) {
+      schema = await this.transformSchemaUsingDirective(schema, directive);
+    }
 
     if (!this.options?.schemas?.length) return schema;
 

@@ -1,14 +1,20 @@
 import {
   metaAnnotation,
+  ReceiveType,
   ReflectionKind,
+  resolveReceiveType,
   Type,
   TypeAnnotation,
+  // TypeAnnotation,
   TypePropertySignature,
 } from '@deepkit/type';
+import { ClassType } from '@deepkit/core';
+import { GraphQLDirective, DirectiveLocation, GraphQLSchema } from 'graphql';
+import { GraphQLFieldConfig } from 'graphql/index';
+import { GraphQLContext } from './types';
+import { GraphQLFieldResolver } from 'graphql/type/definition';
 
 export const DIRECTIVE_META_NAME = 'directive';
-
-export const DIRECTIVE_DEPRECATED_NAME = 'deprecated';
 
 // TODO: Move to apollo package
 export enum FederationDirective {
@@ -22,59 +28,56 @@ export enum FederationDirective {
 
 export const DIRECTIVE_OPTIONS_NAME_SYMBOL: unique symbol = Symbol('__name');
 
-export interface DirectiveOptions<N extends string> {
-  readonly [DIRECTIVE_OPTIONS_NAME_SYMBOL]: N;
+export interface DirectiveAnnotationOptions<N extends string> {
+  readonly [DIRECTIVE_OPTIONS_NAME_SYMBOL]?: N;
 }
 
-export type Directive<N extends string> = TypeAnnotation<
+export type DirectiveAnnotation<
+  N extends string,
+  O extends object = {},
+> = TypeAnnotation<
   typeof DIRECTIVE_META_NAME,
-  DirectiveOptions<N>
+  O & DirectiveAnnotationOptions<N>
 >;
 
 export interface DeprecatedOptions {
   readonly reason: string;
 }
 
-export type Deprecated<T extends DeprecatedOptions> = TypeAnnotation<
-  typeof DIRECTIVE_META_NAME,
-  DirectiveOptions<typeof DIRECTIVE_DEPRECATED_NAME> & T
+export type Deprecated<T extends DeprecatedOptions> = DirectiveAnnotation<
+  'deprecated',
+  T
 >;
 
-export type FederationKey = Directive<typeof FederationDirective.KEY>;
+export type FederationKey = DirectiveAnnotation<FederationDirective.KEY>;
 
 export type FederationReference<T> = {
   [K in keyof T as T[K] extends FederationKey ? K : never]: T[K];
 };
 
 export type FederationShareable<T = never> = T extends never
-  ? Directive<typeof FederationDirective.SHAREABLE>
-  : T & Directive<typeof FederationDirective.SHAREABLE>;
+  ? DirectiveAnnotation<FederationDirective.SHAREABLE>
+  : T & DirectiveAnnotation<FederationDirective.SHAREABLE>;
 
-export type FederationInaccessible = Directive<
-  typeof FederationDirective.INACCESSIBLE
->;
+export type FederationInaccessible =
+  DirectiveAnnotation<FederationDirective.INACCESSIBLE>;
 
 export interface FederationOverrideOptions {
-  // readonly from: string | ClassType | Record<string, unknown>;
   readonly from: string;
   readonly label?: string;
 }
 
 export type FederationOverride<T extends FederationOverrideOptions> =
-  TypeAnnotation<
-    typeof DIRECTIVE_META_NAME,
-    DirectiveOptions<typeof FederationDirective.OVERRIDE> & T
-  >;
+  DirectiveAnnotation<FederationDirective.OVERRIDE, T>;
 
-export type FederationRequires<T extends string[] | readonly string[]> =
-  TypeAnnotation<
-    typeof DIRECTIVE_META_NAME,
-    DirectiveOptions<typeof FederationDirective.REQUIRES> & T
-  >;
+export type FederationRequiresOptions = string[] | readonly string[];
+
+export type FederationRequires<T extends FederationRequiresOptions> =
+  DirectiveAnnotation<FederationDirective.REQUIRES, T>;
 
 export type FederationExternal<T = never> = T extends never
-  ? Directive<typeof FederationDirective.EXTERNAL>
-  : T & Directive<typeof FederationDirective.EXTERNAL>;
+  ? DirectiveAnnotation<FederationDirective.EXTERNAL>
+  : T & DirectiveAnnotation<FederationDirective.EXTERNAL>;
 
 export function getMetaAnnotationDirectives(type: Type): Type[] {
   return metaAnnotation.getForName(type, DIRECTIVE_META_NAME) || [];
@@ -137,4 +140,53 @@ export function getMetaAnnotationDirectiveName(annotation: Type): string {
   }
 
   throw new Error('Unresolved meta annotation directive name');
+}
+
+export type ExtractTypeAnnotationOptions<
+  T extends TypeAnnotation<string, any>,
+> = Exclude<NonNullable<T['__meta']>, never>[1];
+
+export interface GraphQLDirectiveTransformer<
+  T extends DirectiveAnnotation<string>,
+  Args = ExtractTypeAnnotationOptions<T>,
+> {
+  // transform(schema: GraphQLSchema, location: DirectiveLocation): Promise<GraphQLSchema | void> | GraphQLSchema | void;
+  transformObjectField?(
+    args: Args,
+    fieldConfig: GraphQLFieldConfig<unknown, GraphQLContext>,
+    schema: GraphQLSchema,
+  ): GraphQLFieldResolver<unknown, GraphQLContext>;
+}
+
+export type InternalDirective<T extends DirectiveAnnotation<string>> =
+  InternalGraphQLDirective & GraphQLDirectiveTransformer<T>;
+
+export class Directives extends Set<ClassType<InternalDirective<any>>> {}
+
+export class InternalGraphQLDirective extends GraphQLDirective {
+  readonly __type: Type;
+}
+
+export function Directive<T extends DirectiveAnnotation<string>>(
+  options: Pick<GraphQLDirective, 'locations'>,
+  type?: ReceiveType<T>,
+): ClassType<InternalDirective<T>> {
+  type = resolveReceiveType(type);
+
+  const name = getMetaAnnotationDirectiveName(type);
+
+  const args = getMetaAnnotationDirectiveOptions(type);
+
+  return class extends InternalGraphQLDirective {
+    readonly __type = type as Type;
+
+    constructor() {
+      super({
+        name,
+        // TODO
+        args: {},
+        ...options,
+      });
+    }
+  } as ClassType<InternalDirective<T>>;
 }

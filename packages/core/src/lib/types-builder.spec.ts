@@ -31,7 +31,10 @@ import {
   Positive,
   PositiveNoZero,
   ReflectionClass,
-  ReflectionMethod, TypeClass, TypeObjectLiteral, typeOf,
+  ReflectionMethod,
+  TypeClass,
+  TypeObjectLiteral,
+  typeOf,
   uuid,
   UUID,
 } from '@deepkit/type';
@@ -56,7 +59,12 @@ import { GraphQLContext, ID } from './types';
 import { Resolvers } from './resolvers';
 import { isAsyncIterable } from './utils';
 import { InvalidSubscriptionTypeError } from './errors';
-import { Deprecated, FederationKey, FederationShareable, getMetaAnnotationDirectives } from './directives';
+import {
+  Deprecated,
+  FederationKey,
+  FederationShareable,
+  getMetaAnnotationDirectives,
+} from './directives';
 import { GraphQLPropertyType } from './decorators';
 
 describe('TypesBuilder', () => {
@@ -262,99 +270,101 @@ describe('TypesBuilder', () => {
   });
 
   describe('createObjectTypeDefinitionNode', () => {
-    test('Deprecated annotation', () => {
-      interface User {
-        readonly id: ID;
-        readonly oldField: string &
-          Deprecated<{
-            reason: 'oldField is deprecated. Use newField instead';
-          }>;
-        readonly newField: string;
-      }
-
-      const type = typeOf<User>() as TypeObjectLiteral;
-
-      const definitionNode = parse(
-        `
-          type User {
-            id: ID!
-            oldField: String! @deprecated(reason: "oldField is deprecated. Use newField instead")
-            newField: String!
-          }
-        `,
-      ).definitions[0];
-
-      expect(definitionNode).toMatchObject(
-        builder.createObjectTypeDefinitionNode(type),
-      );
-    });
-
-    describe('FederationShareable annotation', () => {
-      test('object', () => {
-        type Position = FederationShareable<{
-          readonly x: integer;
-          readonly y: integer;
-        }>;
-
-        const type = typeOf<Position>() as TypeObjectLiteral;
-
-        const definitionNode = parse(
-          `
-          type Position @shareable {
-            x: Int!
-            y: Int!
-          }
-        `,
-        ).definitions[0];
-
-        expect(definitionNode).toMatchObject(
-          builder.createObjectTypeDefinitionNode(type),
-        );
-      });
-
-      test('field', () => {
-        interface Position {
-          readonly x: integer & FederationShareable;
-          readonly y: integer & FederationShareable;
+    describe('directives', () => {
+      test('Deprecated', () => {
+        interface User {
+          readonly id: ID;
+          readonly oldField: string &
+            Deprecated<{
+              reason: 'oldField is deprecated. Use newField instead';
+            }>;
+          readonly newField: string;
         }
 
-        const type = typeOf<Position>() as TypeObjectLiteral;
+        const type = typeOf<User>() as TypeObjectLiteral;
 
         const definitionNode = parse(
           `
-          type Position {
-            x: Int! @shareable
-            y: Int! @shareable
-          }
-        `,
+            type User {
+              id: ID!
+              oldField: String! @deprecated(reason: "oldField is deprecated. Use newField instead")
+              newField: String!
+            }
+          `,
         ).definitions[0];
 
         expect(definitionNode).toMatchObject(
           builder.createObjectTypeDefinitionNode(type),
         );
       });
-    })
 
-    test('FederationKey annotation', () => {
-      interface User {
-        readonly id: UUID & FederationKey;
-        readonly name: string;
-      }
+      describe('FederationShareable', () => {
+        test('object', () => {
+          type Position = FederationShareable<{
+            readonly x: integer;
+            readonly y: integer;
+          }>;
 
-      const type = typeOf<User>() as TypeObjectLiteral;
+          const type = typeOf<Position>() as TypeObjectLiteral;
 
-      const definitionNode = parse(
-        `
+          const definitionNode = parse(
+            `
+            type Position @shareable {
+              x: Int!
+              y: Int!
+            }
+          `,
+          ).definitions[0];
+
+          expect(definitionNode).toMatchObject(
+            builder.createObjectTypeDefinitionNode(type),
+          );
+        });
+
+        test('field', () => {
+          interface Position {
+            readonly x: integer & FederationShareable;
+            readonly y: integer & FederationShareable;
+          }
+
+          const type = typeOf<Position>() as TypeObjectLiteral;
+
+          const definitionNode = parse(
+            `
+            type Position {
+              x: Int! @shareable
+              y: Int! @shareable
+            }
+          `,
+          ).definitions[0];
+
+          expect(definitionNode).toMatchObject(
+            builder.createObjectTypeDefinitionNode(type),
+          );
+        });
+      });
+
+      test('FederationKey', () => {
+        interface User {
+          readonly id: UUID & FederationKey;
+          readonly name: string;
+        }
+
+        const type = typeOf<User>() as TypeObjectLiteral;
+
+        const definitionNode = parse(
+          `
           type User @key(fields: "id") {
             id: UUID!
             name: String!
           }
         `,
-      ).definitions[0];
+        ).definitions[0];
 
-      expect(definitionNode).toMatchObject(
-        builder.createObjectTypeDefinitionNode(type),
-      );
+        expect(definitionNode).toMatchObject(
+          builder.createObjectTypeDefinitionNode(type),
+        );
+      });
     });
   });
 

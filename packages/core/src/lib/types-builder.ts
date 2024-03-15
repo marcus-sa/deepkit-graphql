@@ -107,7 +107,7 @@ import {
   getTypeName,
   hasDecorator,
   isAsyncIterable,
-  isParameterNullable,
+  isPropertyOrParameterNullable,
   maybeUnwrapPromiseLikeType,
   maybeUnwrapSubscriptionReturnType,
   requireTypeName,
@@ -726,7 +726,7 @@ export class TypesBuilder {
 
     return argsParameters.reduce((args, parameter) => {
       let type = this.createInputType(parameter.type);
-      if (!isParameterNullable(parameter)) {
+      if (!isPropertyOrParameterNullable(parameter)) {
         type = new GraphQLNonNull(type);
       }
 
@@ -746,7 +746,7 @@ export class TypesBuilder {
     return Object.fromEntries(
       reflectionClass.getProperties().map(property => {
         let type = this.createOutputType(property.type);
-        if (!property.isOptional() && !property.isNullable()) {
+        if (!isPropertyOrParameterNullable(property)) {
           type = new GraphQLNonNull(type);
         }
 

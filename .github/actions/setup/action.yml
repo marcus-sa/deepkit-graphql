@@ -5,12 +5,12 @@ inputs:
   node-version:
     description: Node.js version
     required: true
-    default: 20.4.0
+    default: 21.6.2
 
   pnpm-version:
     description: pnpm version
     required: true
-    default: 8.7.4
+    default: 8.15.3
 
 runs:
   using: 'composite'

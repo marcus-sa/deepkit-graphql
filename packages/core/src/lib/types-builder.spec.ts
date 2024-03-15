@@ -229,7 +229,7 @@ describe('TypesBuilder', () => {
 
         const asyncIterator = asyncIterable[Symbol.asyncIterator]();
 
-        const message = { type: 'user-created', id: uuid() };
+        const message = { type: 'user-created', id: uuid() } as const;
 
         await channel.publish(message);
 

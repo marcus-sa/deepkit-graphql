@@ -93,7 +93,7 @@ export function filterReflectionParametersMetaAnnotationsForArguments(
   return argsParameters;
 }
 
-export function isParameterNullable(parameter: ReflectionParameter): boolean {
+export function isPropertyOrParameterNullable(parameter: ReflectionProperty | ReflectionParameter): boolean {
   return parameter.isOptional() || isNullable(parameter.type);
 }
 

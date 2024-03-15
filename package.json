@@ -10,7 +10,7 @@
     "@commitlint/config-conventional": "^17.7.0",
     "@commitlint/config-nx-scopes": "^17.6.4",
     "@deepkit-modules/nx-webpack-plugin": "^0.2.12",
-    "@deepkit/postgres": "1.0.1-alpha.113",
+    "@deepkit/postgres": "1.0.1-alpha.142",
     "@deepkit/type-compiler": "1.0.1-alpha.112",
     "@graphql-tools/schema": "^10.0.2",
     "@nx/devkit": "^16.8.0",
@@ -49,33 +49,33 @@
     "ts-jest": "^29.1.0",
     "ts-node": "10.9.1",
     "type-fest": "^4.3.1",
-    "typescript": "5.2.2",
+    "typescript": "5.4.2",
     "verdaccio": "^5.0.4"
   },
   "dependencies": {
     "@apollo/server": "4.9.3",
     "@apollo/subgraph": "^2.7.1",
-    "@deepkit/app": "1.0.1-alpha.113",
-    "@deepkit/broker": "1.0.1-alpha.113",
-    "@deepkit/bson": "1.0.1-alpha.113",
-    "@deepkit/core": "1.0.1-alpha.113",
-    "@deepkit/core-rxjs": "1.0.1-alpha.113",
-    "@deepkit/event": "1.0.1-alpha.113",
-    "@deepkit/filesystem": "1.0.1-alpha.113",
-    "@deepkit/framework": "1.0.1-alpha.113",
-    "@deepkit/http": "1.0.1-alpha.113",
-    "@deepkit/injector": "1.0.1-alpha.113",
-    "@deepkit/logger": "1.0.1-alpha.113",
-    "@deepkit/orm": "~1.0.1-alpha.113",
-    "@deepkit/rpc": "~1.0.1-alpha.113",
-    "@deepkit/rpc-tcp": "1.0.1-alpha.113",
-    "@deepkit/sql": "1.0.1-alpha.113",
-    "@deepkit/stopwatch": "1.0.1-alpha.113",
-    "@deepkit/template": "1.0.1-alpha.113",
-    "@deepkit/type": "1.0.1-alpha.113",
-    "@deepkit/workflow": "1.0.1-alpha.113",
+    "@deepkit/app": "^1.0.1-alpha.142",
+    "@deepkit/broker": "1.0.1-alpha.142",
+    "@deepkit/bson": "1.0.1-alpha.142",
+    "@deepkit/core": "1.0.1-alpha.124",
+    "@deepkit/core-rxjs": "1.0.1-alpha.124",
+    "@deepkit/event": "1.0.1-alpha.142",
+    "@deepkit/filesystem": "1.0.1-alpha.124",
+    "@deepkit/framework": "1.0.1-alpha.142",
+    "@deepkit/http": "1.0.1-alpha.142",
+    "@deepkit/injector": "1.0.1-alpha.142",
+    "@deepkit/logger": "1.0.1-alpha.142",
+    "@deepkit/orm": "~1.0.1-alpha.142",
+    "@deepkit/rpc": "~1.0.1-alpha.142",
+    "@deepkit/rpc-tcp": "1.0.1-alpha.142",
+    "@deepkit/sql": "1.0.1-alpha.142",
+    "@deepkit/stopwatch": "1.0.1-alpha.142",
+    "@deepkit/template": "1.0.1-alpha.142",
+    "@deepkit/type": "1.0.1-alpha.142",
+    "@deepkit/workflow": "1.0.1-alpha.142",
     "@graphql-tools/utils": "^10.0.8",
-    "graphql": "^16.8.0",
+    "graphql": "16.8.1",
     "graphql-request": "^6.1.0",
     "graphql-scalars": "^1.22.2",
     "graphql-yoga": "^5.0.0",
@@ -83,17 +83,11 @@
     "rxjs": "^7.8.1",
     "tslib": "2.6.2"
   },
-  "packageManager": "pnpm@8.7.4",
-  "volta": {
-    "pnpm": "8.7.4",
-    "node": "20.4.0"
+  "engines": {
+    "node": "21.6.2",
+    "pnpm": "8.15.3"
   },
   "nx": {
     "includedScripts": []
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "typescript@5.2.2": "patches/typescript@5.2.2.patch"
-    }
   }
 }
